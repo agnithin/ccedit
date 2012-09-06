@@ -81,14 +81,27 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-app.get('/', routes.index);
-app.get('/pad', routes.pad);
-app.get('/users', user.list);
+//app.get('/', routes.index);
+
+app.get('/', function(req, res){
+  console.log(user);
+  res.render('index', { user: req.user });
+});
+
+app.get('/pad', ensureAuthenticated, function(req, res){
+  res.render('pad', { user: req.user });
+});
+
+//app.get('/users', user.list);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
 
+
+app.get('/login', function(req, res){
+  res.render('login', { user: req.user });
+});
 
 /* --- passport --- */
 // GET /auth/twitter
@@ -118,4 +131,15 @@ app.get('/logout', function(req, res){
   req.logout();
   res.redirect('/');
 });
+
+
+// Simple route middleware to ensure user is authenticated.
+//   Use this route middleware on any resource that needs to be protected.  If
+//   the request is authenticated (typically via a persistent login session),
+//   the request will proceed.  Otherwise, the user will be redirected to the
+//   login page.
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) { return next(); }
+  res.redirect('/login')
+}
 /* --- passport --- */

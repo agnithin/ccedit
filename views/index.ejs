@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= title %></title>
+    <title>Welcome</title>
     <link rel='stylesheet' href='/css/main.css' />
     <link rel='stylesheet' href='/css/bootstrap.min.css' />
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <h1>CC-Edit</h1>
+    <% if (typeof user === 'undefined') { %>
+		<h4>Welcome! Please <a href="/login">log in</a>.</h4>
+	<% } else { %>
+		<h4>Hello, <%= user.username %>.</h4>
+		Click <a href="/pad">here</a> to go to your pad
+	<% } %>
   </body>
 </html>
+
+
