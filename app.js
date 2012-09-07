@@ -94,7 +94,7 @@ app.get('/pad', ensureAuthenticated, function(req, res){
 
 //app.get('/users', user.list);
 
-http.createServer(app).listen(app.get('port'), function(){
+var server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
 
@@ -143,3 +143,28 @@ function ensureAuthenticated(req, res, next) {
   res.redirect('/login')
 }
 /* --- passport --- */
+
+
+app.get('/chat', function(req, res){
+  res.render('chat', {locals: {
+    title: 'NowJS + Express Example'
+  }});
+});
+
+// NowJS component
+var nowjs = require("now");
+var everyone = nowjs.initialize(server);
+
+
+nowjs.on('connect', function(){
+      console.log("Joined: " + this.now.name);
+});
+
+
+nowjs.on('disconnect', function(){
+      console.log("Left: " + this.now.name);
+});
+
+everyone.now.distributeMessage = function(message){
+  everyone.now.receiveMessage(this.now.name, message);
+};
