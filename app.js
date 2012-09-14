@@ -10,7 +10,6 @@ var express = require('express')
   , path = require('path');
 
 /* passport */
-
 var passport = require('passport')
   , TwitterStrategy = require('passport-twitter').Strategy;
 
@@ -55,7 +54,7 @@ passport.use(new TwitterStrategy({
   }
 ));
 
-/*passport */
+/* x passport x*/
 
 var app = express();
 
@@ -142,9 +141,11 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   res.redirect('/login')
 }
-/* --- passport --- */
+/* x--- passport ---x */
 
 
+
+/** now **/
 app.get('/chat', function(req, res){
   res.render('chat', {locals: {
     title: 'NowJS + Express Example'
