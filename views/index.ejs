@@ -8,11 +8,12 @@
   <body>
     <h1>CC-Edit</h1>
     <% if (typeof user === 'undefined') { %>
-		<h4>Welcome! Please <a href="/login">log in</a>.</h4>
-	<% } else { %>
-		<h4>Hello, <%= user.username %>.</h4>
-		Click <a href="/pad">here</a> to go to your pad
-	<% } %>
+		  <h4>Welcome! Please <a href="/login">log in</a>.</h4>
+    <% } else { %>
+  		<h4>Hello, <%= user.username %>.</h4>
+  		Click <a href="/pad">here</a> to go to your pad</br>
+      Click <a href="/create">here</a> to create a new workspace
+    <% } %>
   </body>
 </html>
 

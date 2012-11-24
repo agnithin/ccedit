@@ -20,7 +20,7 @@
         <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
         <link rel="stylesheet" href="css/main.css">
 
-        <script src="js/vendor/modernizr-2.6.1-respond-1.1.0.min.js"></script>
+        <script src="js/vendor/modernizr-2.6.1-respond-1.1.0.min.js"></script>        
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -70,7 +70,22 @@
 
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span10">
+
+        <!-- Files list -->
+        <div class="span2">
+          <div class="well sidebar-nav">
+            <ul class="nav nav-list">
+              <li class="nav-header">Files</li>
+              <li class="active"><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>
+              <li><a href="#">Link</a></li>              
+            </ul>
+          </div><!--/.well -->
+        </div><!--/span-->
+
+        <!-- main area for code -->
+        <div class="span8">
           <div class="hero-unit">
             <h1>Hello, world!</h1>
             <p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
@@ -81,15 +96,24 @@
           </div><!--/row-->
         </div><!--/span-->
 
+        <!-- online users -->
+        <div class="span2">
+          <div class="well sidebar-nav">
+            <ul id="online-users" class="nav nav-list">
+              <li class="nav-header">Online Users</li>
+            </ul>
+          </div><!--/.well -->
+        </div><!--/span-->
+
+        <!-- chat bar -->
         <div class="span2">
           <div class="well sidebar-nav">
             <ul class="nav nav-list">
-              <li class="nav-header">Online Users</li>
-              <li class="active"><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>              
+              <li class="nav-header">Chat</li>
+              <li id="messages"></li>
             </ul>
+              <textarea id="text-input" rows="4" cols="5"></textarea><input type="button" value="Send" id="send-button">            
+            
           </div><!--/.well -->
         </div><!--/span-->
         
@@ -112,11 +136,44 @@
         <script src="js/plugins.js"></script>
         <script src="js/main.js"></script>
 
+        <script src="/nowjs/now.js"></script>
         <script>
-            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+          $(document).ready(function(){
+            
+            now.receiveMessage = function(name, message){
+              $("#messages").append("<br>" + name + ": " + message);
+            }
+            
+            $("#send-button").click(function(){
+              now.distributeMessage($("#text-input").val());
+              $("#text-input").val("");
+              $("#text-input").focus();
+            });
+            
+            $("#text-input").keypress(function (e) {
+              if (e.which && e.which === 13) {
+                $("#send-button").click();
+                return false;
+              }
+            });
+            
+            now.name = "<%= user.username %>";
+            
+            $("#text-input").focus();
+
+            /*$.each(now.users, function(index, value) { 
+              $("#online-users").append('<li><a href="#">'+value+'</a></li>');
+            });*/
+            
+          });
+        </script>
+
+        <!-- Google Analytics Code -->
+        <script>
+            /*var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
             (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
             g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
-            s.parentNode.insertBefore(g,s)}(document,'script'));
+            s.parentNode.insertBefore(g,s)}(document,'script'));*/
         </script>
     </body>
 </html>
