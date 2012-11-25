@@ -1,12 +1,28 @@
 
-module.exports = function (app) {
+module.exports = function (app, models, mongoose) {
 
 	app.get('/', function(req, res){
 	  //console.log(user);
-	  res.render('index', { user: req.user });
+
+	  	// Move this code to appropriate place --------------------------
+	  	var checkConnectionExists = (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2);
+		if(!checkConnectionExists)
+			console.log("Connection Error");
+		//---------------------------------------------------------------
+
+	  	models.User.findOne({"userId": "agnithin"}, function(err, user){
+		  	if (user != null) {
+		  		console.log('Found the User:' + user.displayName);
+		  		res.render('index', { 'user': req.user, 'projects':user.projects });
+			}else{
+				console.log('Cannot Find the User');
+				res.render('index', { 'user': req.user });
+			}
+	  	});
+	  
 	});
 
-	app.get('/pad', ensureAuthenticated, function(req, res){
+	app.get('/pad/:id', ensureAuthenticated, function(req, res){
 	  res.render('pad', { user: req.user });
 	});
 

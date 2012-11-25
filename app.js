@@ -13,6 +13,11 @@ var passport = require('passport')
 
 require('./auth.js')(passport, TwitterStrategy);
 
+//var db = mongoose.createConnection('mongodb://localhost/ccedit');
+
+var models = {};
+models.User = require('./models/user')(mongoose);
+
 var app = express();
 
 app.configure(function(){
@@ -31,6 +36,8 @@ app.configure(function(){
 
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
+
+  mongoose.connect('mongodb://localhost/ccedit');
 });
 
 app.configure('development', function(){
@@ -38,7 +45,7 @@ app.configure('development', function(){
 });
 
 // configuration for express etc
-require('./routes/index')(app)
+require('./routes/index')(app, models, mongoose)
 require('./routes/auth')(app, passport)
 
 var server = http.createServer(app).listen(app.get('port'), function(){

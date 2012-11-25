@@ -1,64 +1,54 @@
 /** User Schema for CC-Edit **/
 
 var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
 
-var passport = require('passport');
-var bcrypt = require('bcrypt');
-
-// Define schema
-var UserSchema = new Schema({
-    name : { 
-        first: { type: String, required: true } 
-      , last: { type: String, required: true }
-    }
-  , email: { type: String, unique: true }
-
-  , salt: { type: String, required: true }
-  , hash: { type: String, required: true }
-});
+module.exports = function(mongoose) {
+  var collection = 'User';
+  var Schema = mongoose.Schema;
+  var ObjectId = Schema.ObjectId;
 
 
-UserSchema
-.virtual('password')
-.get(function () {
-  return this._password;
-})
-.set(function (password) {
-  this._password = password;
-  var salt = this.salt = bcrypt.genSaltSync(10);
-  this.hash = bcrypt.hashSync(password, salt);
-});
+   
 
-// Not entirely sure why the async version isn't working...
-//.virtual('password')
-//.get(function() {
-//  return this._password;
-//})
-//.set(function(password) {
-//  this._password = password;
-//  bcrypt.genSalt(10, function(err, salt) {
-//    this.salt = salt;
-//    bcrypt.hash(password, salt, function(err, hash) {
-//      this.hash = hash;
-//    });
-//  });
-//});
+  // Define schema
 
-UserSchema.method('verifyPassword', function(password, callback) {
-  bcrypt.compare(password, this.hash, callback);
-});
+  /*var ProjectLinkSchema = new Schema({
+        projectId        : Number
+      , permissions      : String
+    });*/
 
-UserSchema.static('authenticate', function(email, password, callback) {
-  this.findOne({ email: email }, function(err, user) {
-      if (err) { return callback(err); }
-      if (!user) { return callback(null, false); }
-      user.verifyPassword(password, function(err, passwordCorrect) {
-        if (err) { return callback(err); }
-        if (!passwordCorrect) { return callback(null, false); }
-        return callback(null, user);
-      });
-    });
-});
 
-module.exports = mongoose.model('User', UserSchema);
+  var UserSchema = new Schema({
+      userId : {type: String, required: true}
+    , provider : {type: String, required: true} 
+    , displayName : {type: String, required: true }
+    , email: { type: String, unique: true }
+    , projects:{ type: [{projectId: Number, projectName: String, permissions: String }] }
+  });
+
+  /*this.model = mongoose.model("User", UserSchema);
+  return this;*/
+
+  var userModel = mongoose.model('User', UserSchema);
+     
+  /*var user = new userModel();
+     
+    user.userId = 'ag_nithin';
+    user.provider = 'twitter';
+    user.displayName = 'AG Nithin';
+    user.email= "agnithin@yahoo.com";
+
+    user.save(function(err) {
+      if (err) throw err;
+      console.log('User saved, starting server...');
+    }); */
+
+    return userModel;
+  //return mongoose.model('User', UserSchema);
+}
+
+//module.exports = mongoose.model('User', UserSchema);
+
+/*
+db.users.save({"userId":"agnithin", "provider":"twitter", "displayName":"Nithin Anand Gangadharan", "email":"agnithin@gmail.com", "projects":[{"projectId":1, "projectName":"Test 1", "permissions":"rw"}, {"projectId":2,"projectName":"Test 2", "permissions":"rw"}]});
+*/

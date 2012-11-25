@@ -11,8 +11,11 @@
 		  <h4>Welcome! Please <a href="/login">log in</a>.</h4>
     <% } else { %>
   		<h4>Hello, <%= user.username %>.</h4>
-  		Click <a href="/pad">here</a> to go to your pad</br>
-      Click <a href="/create">here</a> to create a new workspace
+      <h3>Your Projects</h3>
+      <% for(var i = 0; i < projects.length; i++){ %>
+  		    <a href="/pad/<%=projects[i].projectId %>"><%=projects[i].projectName %></a></br>
+      <% } %>    
+     <a class="btn" href="/create">Create New Project</a>
     <% } %>
   </body>
 </html>
