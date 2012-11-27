@@ -12,11 +12,16 @@
     <% } else { %>
   		<h4>Hello, <%= user.username %>.</h4>
       <h3>Your Projects</h3>
-      <% for(var i = 0; i < projects.length; i++){ %>
+      <%if(typeof projects === 'undefined'){ %>
+      <p>You have no Projects</p>
+      <% }else{for(var i = 0; i < projects.length; i++){ %>
   		    <a href="/pad/<%=projects[i].projectId %>"><%=projects[i].projectName %></a></br>
       <% } %>    
-     <a class="btn" href="/create">Create New Project</a>
+     
     <% } %>
+    <a class="btn" href="/create">Create New Project</a>
+  <%}%>
+
   </body>
 </html>
 

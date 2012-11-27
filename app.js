@@ -17,6 +17,8 @@ require('./auth.js')(passport, TwitterStrategy);
 
 var models = {};
 models.User = require('./models/user')(mongoose);
+models.Project = require('./models/project')(mongoose);
+models.File = require('./models/file')(mongoose);
 
 var app = express();
 

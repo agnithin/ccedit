@@ -74,19 +74,16 @@
         <!-- Files list -->
         <div class="span2">
           <div class="well sidebar-nav">
-            <ul class="nav nav-list">
+            <ul id="project-files" class="nav nav-list">
               <li class="nav-header">Files</li>
-              <li class="active"><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>              
+              <li class="active"><a href="#">Sample file</a></li>
             </ul>
           </div><!--/.well -->
         </div><!--/span-->
 
         <!-- main area for code -->
         <div class="span8">
-          <div class="hero-unit">
+          <div id="code-content" class="hero-unit">
             <h1>Hello, world!</h1>
             <p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
             <p><a class="btn btn-primary btn-large">Learn more &raquo;</a></p>
@@ -164,8 +161,29 @@
             /*$.each(now.users, function(index, value) { 
               $("#online-users").append('<li><a href="#">'+value+'</a></li>');
             });*/
+            var files = new Array();
+            <% for(i=0; i<files.length; i++){ %>
+              var obj={
+              fileId : '<%=files[i].fileId%>',
+              fileName: '<%=files[i].fileName%>'
+              }
+              files.push(obj);
+
+            <%}%>
+
+            
+
+            $.each(files, function(index, value) { 
+              $("#project-files").append('<li><a href="#" onclick="loadFile(\''+value.fileId+'\')">'+value.fileName+'</a></li>');
+            });
+
+            
             
           });
+
+          function loadFile(value){
+              $("#code-content").load("../file/"+value);
+            }
         </script>
 
         <!-- Google Analytics Code -->

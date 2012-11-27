@@ -7,11 +7,7 @@ module.exports = function(mongoose) {
   var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
 
-
-   
-
   // Define schema
-
   /*var ProjectLinkSchema = new Schema({
         projectId        : Number
       , permissions      : String
@@ -23,11 +19,8 @@ module.exports = function(mongoose) {
     , provider : {type: String, required: true} 
     , displayName : {type: String, required: true }
     , email: { type: String, unique: true }
-    , projects:{ type: [{projectId: Number, projectName: String, permissions: String }] }
+    , projects:{ type: [{projectId: ObjectId, projectName: String, permissions: String }] }
   });
-
-  /*this.model = mongoose.model("User", UserSchema);
-  return this;*/
 
   var userModel = mongoose.model('User', UserSchema);
      
@@ -47,8 +40,6 @@ module.exports = function(mongoose) {
   //return mongoose.model('User', UserSchema);
 }
 
-//module.exports = mongoose.model('User', UserSchema);
-
 /*
-db.users.save({"userId":"agnithin", "provider":"twitter", "displayName":"Nithin Anand Gangadharan", "email":"agnithin@gmail.com", "projects":[{"projectId":1, "projectName":"Test 1", "permissions":"rw"}, {"projectId":2,"projectName":"Test 2", "permissions":"rw"}]});
+db.users.save({"userId":"agnithin", "provider":"twitter", "displayName":"Nithin Anand Gangadharan", "email":"agnithin@gmail.com", "projects":[{"projectId":1, "projectName":"Test 1", "permissions":"rw"}]});
 */

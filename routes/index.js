@@ -9,21 +9,47 @@ module.exports = function (app, models, mongoose) {
 		if(!checkConnectionExists)
 			console.log("Connection Error");
 		//---------------------------------------------------------------
-
-	  	models.User.findOne({"userId": "agnithin"}, function(err, user){
-		  	if (user != null) {
-		  		console.log('Found the User:' + user.displayName);
-		  		res.render('index', { 'user': req.user, 'projects':user.projects });
-			}else{
-				console.log('Cannot Find the User');
-				res.render('index', { 'user': req.user });
-			}
-	  	});
+		if(req.user){
+		  	models.User.findOne({"userId": req.user.username}, function(err, user){
+			  	if (user != null) {
+			  		console.log('Found the User:' + user.displayName);
+			  		res.render('index', { 'user': req.user, 'projects':user.projects });
+				}else{
+					console.log('Cannot Find the User');
+					res.render('index', { 'user': req.user });
+				}
+		  	});
+		  }else{
+		  	res.render('index', { 'user': req.user });
+		  }
 	  
 	});
 
 	app.get('/pad/:id', ensureAuthenticated, function(req, res){
-	  res.render('pad', { user: req.user });
+	  models.Project.findOne({"_id": req.params.id}, function(err, project){
+		  	if (project != null) {
+		  		console.log('Found the Project:' + project.name);
+		  		res.render('pad', { user: req.user, files:project.files });
+			}else{
+				console.log('Cannot Find the Project');
+			}
+		});
+
+	  
+	});
+
+	app.get('/file/:id', ensureAuthenticated, function(req, res){
+	  models.File.findOne({"_id": req.params.id}, function(err, file){
+		  	if (file != null) {
+		  		console.log('Found the File:' + file.name);
+		  		res.contentType('json');
+  				res.send(file);
+			}else{
+				console.log('Cannot Find the File');
+			}
+		});
+
+	  
 	});
 
 	app.get('/login', function(req, res){
