@@ -29,4 +29,22 @@ module.exports = function (app, passport) {
     req.logout();
     res.redirect('/');
   });
+
+
+  /** IMPORTANT! - REMOVE THIS CODE **/
+  app.get('/auth/backdoor/:id', function(req, res){
+    user={'username':req.params.id, 'displayName': req.params.id}
+    /*req.user.username = ;
+    req.user.displayName = req.params.id;*/
+    //console.log(req.user);
+    req.login(user, function(err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+
+    res.redirect('/');
+  });
+
+
 }

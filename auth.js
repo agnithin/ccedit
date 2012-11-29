@@ -43,5 +43,3 @@ module.exports = function(passport, TwitterStrategy){
     }
   ));
 };
-
-/* x passport x*/

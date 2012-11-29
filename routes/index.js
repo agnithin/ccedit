@@ -9,6 +9,7 @@ module.exports = function (app, models, mongoose) {
 		if(!checkConnectionExists)
 			console.log("Connection Error");
 		//---------------------------------------------------------------
+		console.log("inside / :" + req.user);
 		if(req.user){
 		  	models.User.findOne({"userId": req.user.username}, function(err, user){
 			  	if (user != null) {
