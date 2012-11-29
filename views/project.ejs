@@ -6,7 +6,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Pad</title>
+        <title>Project - <%=project.name%></title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
@@ -46,7 +46,7 @@
             </p> -->
             <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">About</a></li>
+              <li><a href="#about">Download as Zip</a></li>
               <li><a href="#contact">Share</a></li>
             </ul>
             
@@ -74,7 +74,7 @@
           <div class="well sidebar-nav">
             <ul id="project-files" class="nav nav-list">
               <li class="nav-header">Files</li>
-              <li class="active"><a href="#">Sample file</a></li>
+              <!--<li class="active"><a href="#">Sample file</a></li>-->
             </ul>
           </div><!--/.well -->
         </div><!--/span-->
@@ -107,7 +107,7 @@
               <li class="nav-header">Chat</li>
               <li id="messages"></li>
             </ul>
-              <textarea id="text-input" rows="4" cols="5"></textarea><input type="button" value="Send" id="send-button">            
+              <textarea id="chat-text" rows="4" cols="5"></textarea><input type="button" value="Send" id="send-button">            
             
           </div><!--/.well -->
         </div><!--/span-->
@@ -126,59 +126,40 @@
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="../js/vendor/jquery-1.8.0.min.js"><\/script>')</script>
 
-        <script src="../js/vendor/bootstrap.min.js"></script>
+        <script src="/js/vendor/bootstrap.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
 
-        <script src="../js/plugins.js"></script>
-        <script src="../js/main.js"></script>
+        <script src="/js/plugins.js"></script>
+        <script src="/js/main.js"></script>
 
-        <script src="../nowjs/now.js"></script>
+        <!--<script src="../nowjs/now.js"></script> -->
+
         <script>
           $(document).ready(function(){
             
-            now.receiveMessage = function(name, message){
-              $("#messages").append("<br>" + name + ": " + message);
-            }
-            
-            $("#send-button").click(function(){
-              now.distributeMessage($("#text-input").val());
-              $("#text-input").val("");
-              $("#text-input").focus();
-            });
-            
-            $("#text-input").keypress(function (e) {
-              if (e.which && e.which === 13) {
-                $("#send-button").click();
-                return false;
-              }
-            });
-            
-            now.name = "<%= user.username %>";
-            
-            $("#text-input").focus();
-
-            /*$.each(now.users, function(index, value) { 
-              $("#online-users").append('<li><a href="#">'+value+'</a></li>');
-            });*/
+          $("#text-input").focus();
             var files = new Array();
-            <% for(i=0; i<files.length; i++){ %>
+            <% for(i=0; i<project.files.length; i++){ %>
               var obj={
-              fileId : '<%=files[i].fileId%>',
-              fileName: '<%=files[i].fileName%>'
+              fileId : '<%=project.files[i].fileId%>',
+              fileName: '<%=project.files[i].fileName%>'
               }
               files.push(obj);
 
             <%}%>            
 
             $.each(files, function(index, value) { 
-              $("#project-files").append('<li><a href="#" onclick="loadFile(\''+value.fileId+'\')">'+value.fileName+'</a></li>');
+              $("#project-files").append('<li><a href="#" onclick="loadFile(\''+value.fileId+'\', this)">'+value.fileName+'</a></li>');
             });
 
             
             
           });
 
-          function loadFile(value){
+          function loadFile(value, ele){
               $("#code-content").load("../file/"+value);
+              $(ele).parent().parent().children().removeClass("active");
+              $(ele).parent().addClass("active");
             }
         </script>
 
@@ -189,5 +170,51 @@
             g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
             s.parentNode.insertBefore(g,s)}(document,'script'));*/
         </script>
+
+
+
+        <script>
+            var socket = io.connect('http://localhost:3000');
+
+            // on connection to server, ask for user's name with an anonymous callback
+            socket.on('connect', function(){
+              // call the server-side function 'adduser' and send one parameter (value of prompt)
+              socket.emit('adduser', "<%= user.username %>");
+            });
+
+            // listener, whenever the server emits 'updatechat', this updates the chat body
+            socket.on('updatechat', function (username, data) {
+              $('#messages').append('<b>'+username + ':</b> ' + data + '<br>');
+            });
+
+            // listener, whenever the server emits 'updateusers', this updates the username list
+            socket.on('updateusers', function(data) {
+              $('#online-users').empty();
+              $.each(data, function(key, value) {
+                $('#online-users').append('<li>' + key + '</li>');
+              });
+            });
+
+            // on load of page
+            $(function(){
+              // when the client clicks SEND
+              $('#send-button').click( function() {
+                var message = $('#chat-text').val();
+                $('#chat-text').val('');
+                // tell server to execute 'sendchat' and send along one parameter
+                socket.emit('sendchat', message);
+              });
+
+              // when the client hits ENTER on their keyboard
+              $('#chat-text').keypress(function(e) {
+                if(e.which == 13) {
+                  //$(this).blur();
+                  $('#send-button').click();
+                  return false;
+                }
+              });
+            });
+        </script>
+
     </body>
 </html>

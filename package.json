@@ -11,7 +11,6 @@
     "express": "3.0.0rc4",
     "ejs": "*",
     "passport": "0.1.x",
-    "passport-twitter": "0.1.x",
-    "now": "0.8.x"
+    "passport-twitter": "0.1.x"
   }
 }

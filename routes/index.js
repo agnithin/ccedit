@@ -9,7 +9,7 @@ module.exports = function (app, models, mongoose) {
 		if(!checkConnectionExists)
 			console.log("Connection Error");
 		//---------------------------------------------------------------
-		console.log("inside / :" + req.user);
+		
 		if(req.user){
 		  	models.User.findOne({"userId": req.user.username}, function(err, user){
 			  	if (user != null) {
@@ -26,11 +26,11 @@ module.exports = function (app, models, mongoose) {
 	  
 	});
 
-	app.get('/pad/:id', ensureAuthenticated, function(req, res){
+	app.get('/project/:id', ensureAuthenticated, function(req, res){
 	  models.Project.findOne({"_id": req.params.id}, function(err, project){
 		  	if (project != null) {
 		  		console.log('Found the Project:' + project.name);
-		  		res.render('pad', { user: req.user, files:project.files });
+		  		res.render('project', { user: req.user, project:project });
 			}else{
 				console.log('Cannot Find the Project');
 			}
