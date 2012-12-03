@@ -24,7 +24,7 @@ module.exports = function(io){
 	    // echo to client they've connected
 	    socket.emit('updatechat', 'SERVER', 'you have connected');
 	    // echo globally (all clients) that a person has connected
-	    socket.broadcast.emit('updatechat', 'SERVER', username + ' has connected');
+	    socket.broadcast.emit('updatechat', 'SERVER', username + ' in online');
 	    // update the list of users in chat, client-side
 	    chat.emit('updateusers', usernames);
 	  });

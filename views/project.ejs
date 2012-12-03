@@ -60,7 +60,7 @@
       </div>
 
       <!--<script type="text/x-handlebars"> <!-- handelbars dynamic content -->
-        <div class="container-fluid">      
+        <div id="wrap" class="container-fluid">      
           
           <div class="row-fluid">
 
@@ -77,12 +77,30 @@
 
             <!-- main area for code -->
             <div class="span8">
-              <div id="code-content" class="hero-unit" contenteditable="true">
-                <p>{{App.currentFile.contents}}</p>
-                
+
+              <div class="tabbable"> <!-- Only required for left/right tabs -->
+                <ul class="nav nav-tabs">
+                  <li class="active"><a href="#tab1" data-toggle="tab">filename1.html<button class="close" type="button">×</button></a></li>
+                  <li><a href="#tab2" data-toggle="tab">filename2.html</a></li>
+                </ul>
+                <div class="tab-content">
+                  <div class="tab-pane active" id="tab1">
+
+                  
+                    <div id="code-content" class="hero-unit" contenteditable="true">
+                      <p>{{App.currentFile.contents}}</p>
+                      
+                    </div>
+                    <div class="row-fluid">            
+                    </div><!--/row-->
+
+
+                  </div>
+                  <div class="tab-pane" id="tab2">
+                    <p>file 2</p>
+                  </div>
+                </div>
               </div>
-              <div class="row-fluid">            
-              </div><!--/row-->
             </div><!--/span-->
 
             <!-- online users -->
@@ -99,9 +117,10 @@
               <div class="well sidebar-nav">
                 <ul class="nav nav-list">
                   <li class="nav-header">Chat</li>
+                  <li id="chat-alert-success" class="alert alert-info" style="display:none"></li>
                   <li id="messages"></li>
                 </ul>
-                  <textarea id="chat-text" rows="4" cols="5"></textarea><input type="button" value="Send" id="send-button">            
+                  <textarea id="chat-text" rows="4" ></textarea><input type="button" value="Send" id="send-button">            
                 
               </div><!--/.well -->
             </div><!--/span-->        
@@ -114,8 +133,6 @@
           </footer>      
 
         </div> <!-- /container -->
-
-        <div class="modal"><!-- Place at bottom of page --></div>
 
       <!--</script><!-- end of handelbars dynamic content -->
 
@@ -203,7 +220,14 @@
 
             // listener, whenever the server emits 'updatechat', this updates the chat body
             chat.on('updatechat', function (username, data) {
-              $('#messages').append('<b>'+username + ':</b> ' + data + '<br>');
+              if(username=='SERVER'){
+                $("#chat-alert-success").text(data).fadeIn();
+                window.setTimeout( function(){
+                    $("#chat-alert-success").slideUp();
+                }, 5000);
+              }else{
+                $('#messages').append('<b>'+username + ':</b> ' + data + '<br>');
+              }
             });
 
             // listener, whenever the server emits 'updateusers', this updates the username list
@@ -239,6 +263,11 @@
             var file = io.connect('http://localhost:3000/file');
             var currentFile;
             var currentFileContents;
+            var currentFile = {
+              _id: null,
+              name: null,
+              contents: null
+            }
 
             file.on('connect', function(){
               //file.emit('adduser', "<%= user.username %>");
@@ -246,34 +275,34 @@
 
             function loadFile(value, ele){
               file.emit('getFile', value);
-              currentFile=value;              
               $(ele).parent().parent().children().removeClass("active");
               $(ele).parent().addClass("active");
               //$('body').addClass("loading");
             }
 
-            file.on('putFile', function (fileData) {
-              $("#code-content").text(fileData.contents);
-              currentFileContents = fileData.contents;
+            file.on('putFile', function (newFile) {
+              currentFile = newFile;
+              $("#code-content").text(currentFile.contents);              
               //App.currentFile.update(fileData);
              // $('body').removeClass("loading");         
             });
 
             $("#code-content").bind('change', function(){
-                file.emit('updateFile', {"contents":$("#code-content").text(),"name":"sample.html","_id":currentFile});
+                file.emit('updateFile', {
+                  "contents":$("#code-content").text(),
+                  "name":currentFile.name,
+                  "_id":currentFile._id
+                });
             });
            
 
-            file.on('updateFile', function (fileData) {
-              //alert("ws:"+$(fileData.contents).html()+"\n    lvar:" + $(currentFileContents).html());
-              //var newText = getDiff(htmlEscape(currentFileContents), htmlEscape(fileData.contents));
-              var newText = getDiff(currentFileContents, fileData.contents);
-              $("#code-content").html(newText);
-              //document.getElementById("code-content").innerHTML=newText;
-              //alert(newText);
-              currentFileContents = fileData.contents;
-              //App.currentFile.update(fileData);
-                       
+            file.on('updateFile', function (newFile) {
+              if(currentFile._id == newFile._id){
+                var newText = getDiff(currentFile.contents, newFile.contents);
+                $("#code-content").html(newText);
+                currentFile=newFile;
+                //App.currentFile.update(fileData);
+              }                       
             });
             
 

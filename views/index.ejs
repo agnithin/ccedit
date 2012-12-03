@@ -14,11 +14,13 @@
       <h3>Your Projects</h3>
       <%if(typeof projects === 'undefined'){ %>
           <p>You have no Projects</p>
-      <% }else{
-          for(var i = 0; i < projects.length; i++){ %>
-  		      <a href="/project/<%=projects[i].projectId %>"><%=projects[i].projectName %></a></br>
-        <% } 
-        } %>
+      <% }else{ %>
+        <ul class="nav nav-tabs nav-stacked">
+          <%for(var i = 0; i < projects.length; i++){ %>
+  		      <li><a href="/project/<%=projects[i].projectId %>"><%=projects[i].projectName %></a></li>
+        <% } %>
+        </ul> 
+       <% } %>
       <br/><a class="btn" href="/create">Create New Project</a>
   <%}%>
 

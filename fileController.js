@@ -25,6 +25,8 @@ module.exports = function(io, models){
 	    console.log("Update File:" + data);   
 
 	    socket.broadcast.emit('updateFile',  data);
+	    models.File.save(data);
+	    //models.File.update({'_id':data._id}, data);
 	    /*models.File.findOne({"_id": data}, function(err, fileContents){
 		  	if (fileContents != null) {
 		  		socket.emit('putFile', fileContents);
