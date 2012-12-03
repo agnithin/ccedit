@@ -17,10 +17,10 @@
                 padding-bottom: 40px;
             }
         </style>
-        <link rel="stylesheet" href="../css/bootstrap-responsive.min.css">
-        <link rel="stylesheet" href="../css/main.css">
+        <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
+        <link rel="stylesheet" href="/css/main.css">
 
-        <script src="../js/vendor/modernizr-2.6.1-respond-1.1.0.min.js"></script>        
+        <script src="/js/vendor/modernizr-2.6.1-respond-1.1.0.min.js"></script>        
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -29,105 +29,106 @@
 
         <!-- This code is taken from http://twitter.github.com/bootstrap/examples/hero.html -->
 
-        <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container-fluid">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <a class="brand" href="/">CC-Edit</a>
-          <div class="nav-collapse collapse">
-
-            <!--<p class="navbar-text pull-right">
-              <a href="#" class="navbar-link"><%= user.username %></a>
-              <a href="/logout" class="navbar-link">Logoff</a>
-            </p> -->
-            <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">Download as Zip</a></li>
-              <li><a href="#contact">Share</a></li>
-            </ul>
-            
-            <ul class="nav pull-right">
-              <li class="dropdown ">
-                <a href="#" class="navbar-link dropdown-toggle" data-toggle="dropdown"><%= user.username %> <b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li><a href="#">Account Info</a></li>
-                  <li class="divider"></li>
-                  <li><a href="../logout">Logoff</a></li>
-                </ul>
-              </li>
-            </ul>
-
-          </div><!--/.nav-collapse -->
+      <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+          <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/">CC-Edit</a>
+            <div class="nav-collapse collapse">
+              <ul class="nav">
+                <li class="active"><a href="#">Home</a></li>
+                <li><a href="#about">Download as Zip</a></li>
+                <li><a href="#contact">Share</a></li>
+              </ul>            
+              <ul class="nav pull-right">
+                <li class="dropdown ">
+                  <a href="#" class="navbar-link dropdown-toggle" data-toggle="dropdown"><%= user.username %> <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="#">Account Info</a></li>
+                    <li class="divider"></li>
+                    <li><a href="/logout">Logoff</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </div><!--/.nav-collapse -->
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="container-fluid">
-      <div class="row-fluid">
-
-        <!-- Files list -->
-        <div class="span2">
-          <div class="well sidebar-nav">
-            <ul id="project-files" class="nav nav-list">
-              <li class="nav-header">Files</li>
-              <!--<li class="active"><a href="#">Sample file</a></li>-->
-            </ul>
-          </div><!--/.well -->
-        </div><!--/span-->
-
-        <!-- main area for code -->
-        <div class="span8">
-          <div id="code-content" class="hero-unit">
-            <h1>Hello, world!</h1>
-            <p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
-            <p><a class="btn btn-primary btn-large">Learn more &raquo;</a></p>
-          </div>
+      <!--<script type="text/x-handlebars"> <!-- handelbars dynamic content -->
+        <div class="container-fluid">      
+          
           <div class="row-fluid">
-            
+
+            <!-- Files list -->
+            <div class="span2">
+              <div class="well sidebar-nav">
+                <ul id="project-files" class="nav nav-list">
+                  <li class="nav-header">Files</li>
+                  <!--<li class="active"><a href="#">Sample file</a></li>-->
+                  <!--<li><a onclick="loadFile('50b3169fd5b15beb0e000005', this)" href="#">sample.html</a></li>-->
+                </ul>
+              </div><!--/.well -->
+            </div><!--/span-->
+
+            <!-- main area for code -->
+            <div class="span8">
+              <div id="code-content" class="hero-unit" contenteditable="true">
+                <p>{{App.currentFile.contents}}</p>
+                
+              </div>
+              <div class="row-fluid">            
+              </div><!--/row-->
+            </div><!--/span-->
+
+            <!-- online users -->
+            <div class="span2">
+              <div class="well sidebar-nav">
+                <ul id="online-users" class="nav nav-list">
+                  <li class="nav-header">Online Users</li>
+                </ul>
+              </div><!--/.well -->
+            </div><!--/span-->
+
+            <!-- chat bar -->
+            <div class="span2">
+              <div class="well sidebar-nav">
+                <ul class="nav nav-list">
+                  <li class="nav-header">Chat</li>
+                  <li id="messages"></li>
+                </ul>
+                  <textarea id="chat-text" rows="4" cols="5"></textarea><input type="button" value="Send" id="send-button">            
+                
+              </div><!--/.well -->
+            </div><!--/span-->        
+
           </div><!--/row-->
-        </div><!--/span-->
-
-        <!-- online users -->
-        <div class="span2">
-          <div class="well sidebar-nav">
-            <ul id="online-users" class="nav nav-list">
-              <li class="nav-header">Online Users</li>
-            </ul>
-          </div><!--/.well -->
-        </div><!--/span-->
-
-        <!-- chat bar -->
-        <div class="span2">
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">Chat</li>
-              <li id="messages"></li>
-            </ul>
-              <textarea id="chat-text" rows="4" cols="5"></textarea><input type="button" value="Send" id="send-button">            
-            
-          </div><!--/.well -->
-        </div><!--/span-->
-        
-
-      </div><!--/row-->
-
-            <hr>
-
-            <footer>
-                <p>&copy; Company 2012</p>
-            </footer>
+          
+          <hr>
+          <footer>
+              <p>&copy; Company 2012</p>
+          </footer>      
 
         </div> <!-- /container -->
+
+        <div class="modal"><!-- Place at bottom of page --></div>
+
+      <!--</script><!-- end of handelbars dynamic content -->
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="../js/vendor/jquery-1.8.0.min.js"><\/script>')</script>
 
-        <script src="/js/vendor/bootstrap.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/vendor/bootstrap.min.js"></script>
+        <script src="/js/vendor/diff_match_patch.js"></script>
+        
+        <script src="/js/vendor/handlebars-1.0.rc.1.js"></script>
+        <script src="/js/vendor/ember-1.0.0-pre.2.min.js"></script>
+        <!--<script src="/js/app.js"></script> -->
 
         <script src="/js/plugins.js"></script>
         <script src="/js/main.js"></script>
@@ -152,15 +153,30 @@
               $("#project-files").append('<li><a href="#" onclick="loadFile(\''+value.fileId+'\', this)">'+value.fileName+'</a></li>');
             });
 
+
+            /** add onchange event for contenteditable 
+            borrowed from :http://stackoverflow.com/questions/1391278/contenteditable-change-events **/
+            $('[contenteditable]').live('focus', function() {
+                var $this = $(this);
+                $this.data('before', $this.html());
+                return $this;
+            }).live('blur keyup paste', function() {
+                var $this = $(this);
+                if ($this.data('before') !== $this.html()) {
+                    $this.data('before', $this.html());
+                    $this.trigger('change');
+                }
+                return $this;
+            });
             
             
           });
 
-          function loadFile(value, ele){
+          /*function loadFile(value, ele){
               $("#code-content").load("../file/"+value);
               $(ele).parent().parent().children().removeClass("active");
               $(ele).parent().addClass("active");
-            }
+            }*/
         </script>
 
         <!-- Google Analytics Code -->
@@ -174,21 +190,24 @@
 
 
         <script>
-            var socket = io.connect('http://localhost:3000');
+            /**************************
+            * WEBSOCKET CHAT OPERATIONS
+            **************************/
+            var chat = io.connect('http://localhost:3000/chat');
 
             // on connection to server, ask for user's name with an anonymous callback
-            socket.on('connect', function(){
+            chat.on('connect', function(){
               // call the server-side function 'adduser' and send one parameter (value of prompt)
-              socket.emit('adduser', "<%= user.username %>");
+              chat.emit('adduser', "<%= user.username %>");
             });
 
             // listener, whenever the server emits 'updatechat', this updates the chat body
-            socket.on('updatechat', function (username, data) {
+            chat.on('updatechat', function (username, data) {
               $('#messages').append('<b>'+username + ':</b> ' + data + '<br>');
             });
 
             // listener, whenever the server emits 'updateusers', this updates the username list
-            socket.on('updateusers', function(data) {
+            chat.on('updateusers', function(data) {
               $('#online-users').empty();
               $.each(data, function(key, value) {
                 $('#online-users').append('<li>' + key + '</li>');
@@ -202,18 +221,88 @@
                 var message = $('#chat-text').val();
                 $('#chat-text').val('');
                 // tell server to execute 'sendchat' and send along one parameter
-                socket.emit('sendchat', message);
+                chat.emit('sendchat', message);
               });
 
               // when the client hits ENTER on their keyboard
               $('#chat-text').keypress(function(e) {
                 if(e.which == 13) {
-                  //$(this).blur();
                   $('#send-button').click();
                   return false;
                 }
               });
             });
+
+            /**************************
+            * WEBSOCKET FILE OPERATIONS
+            **************************/
+            var file = io.connect('http://localhost:3000/file');
+            var currentFile;
+            var currentFileContents;
+
+            file.on('connect', function(){
+              //file.emit('adduser', "<%= user.username %>");
+            });
+
+            function loadFile(value, ele){
+              file.emit('getFile', value);
+              currentFile=value;              
+              $(ele).parent().parent().children().removeClass("active");
+              $(ele).parent().addClass("active");
+              //$('body').addClass("loading");
+            }
+
+            file.on('putFile', function (fileData) {
+              $("#code-content").text(fileData.contents);
+              currentFileContents = fileData.contents;
+              //App.currentFile.update(fileData);
+             // $('body').removeClass("loading");         
+            });
+
+            $("#code-content").bind('change', function(){
+                file.emit('updateFile', {"contents":$("#code-content").text(),"name":"sample.html","_id":currentFile});
+            });
+           
+
+            file.on('updateFile', function (fileData) {
+              //alert("ws:"+$(fileData.contents).html()+"\n    lvar:" + $(currentFileContents).html());
+              //var newText = getDiff(htmlEscape(currentFileContents), htmlEscape(fileData.contents));
+              var newText = getDiff(currentFileContents, fileData.contents);
+              $("#code-content").html(newText);
+              //document.getElementById("code-content").innerHTML=newText;
+              //alert(newText);
+              currentFileContents = fileData.contents;
+              //App.currentFile.update(fileData);
+                       
+            });
+            
+
+            /**************************
+            * MISC FUNCTIONS
+            **************************/
+            function getDiff(text1, text2) {
+              var dmp = new diff_match_patch();
+              dmp.Diff_Timeout = 1;
+              dmp.Diff_EditCost = 4;
+
+              var d = dmp.diff_main(text1, text2);
+
+              //dmp.diff_cleanupSemantic(d);
+              dmp.diff_cleanupEfficiency(d);
+
+              var ds = dmp.diff_prettyHtml(d);
+              return ds;
+            }
+
+            /*http://jsperf.com/htmlencoderegex */
+            function htmlEscape(str) {
+                return String(str)
+                        .replace(/&/g, '&amp;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+            }
         </script>
 
     </body>

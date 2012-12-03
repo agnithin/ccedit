@@ -3,7 +3,8 @@ comparison of serverside frameworks express/
 comparison of different server-client frameworks derby/meteor/tower.js/railway.js
 metior does not follow node standards, derby
 
-comparison of different client frameworks emberjs/backbone/angular
+comparison of different client frameworks backbone/..  
+2way databinding=> angular/emberjs
 
 comparison of template language ejs/jade/cofee
 
@@ -11,7 +12,8 @@ started with now.js but the developer dropped the development
 alternatives dnode/socketstream/
 transport layer: sockjs/socketio/engine.io
 
-
+database
+database design was based on access patterns even if introduces redunancy
 
 
 
@@ -21,3 +23,8 @@ https://github.com/werg/snucode
 
 syntax highlighting
 http://codemirror.net/
+
+
+
+socket.io
+http://psitsmike.com/2011/09/node-js-and-socket-io-chat-tutorial/
