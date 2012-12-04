@@ -48,6 +48,7 @@ module.exports = function(io, models){
 	    models.Project.findOne({"_id": data}, function(err, projectData){
 		  	if (projectData != null) {
 		  		socket.emit('putProject', projectData);
+		  		console.log("Retrieved Project" + projectData);
 			}else{
 				socket.emit('putProject', "");
 				console.log('Cannot Find the Project');

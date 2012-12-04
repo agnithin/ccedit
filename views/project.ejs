@@ -71,7 +71,7 @@
                   <li class="nav-header">Files</li>
                   <!--<li class="active"><a href="#">Sample file</a></li>-->
                   <li ng-repeat="file in project.files">
-                    <a ng-click="openFile(file._id)" href="#">{{file.fileName}}</a>
+                    <a ng-click="openFile(file.fileId)" href="#">{{file.fileName}}</a>
                   </li>
                 </ul>
               </div><!--/.well -->
@@ -144,6 +144,9 @@
         <script src="/socket.io/socket.io.js"></script>
         <script src="/js/vendor/bootstrap.min.js"></script>
         <script src="/js/vendor/diff_match_patch.js"></script>
+
+        <!-- change this to local -->
+        <script src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
         
         <!--http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js -->
         <script src="/js/vendor/angular.min.js"></script>
@@ -161,23 +164,6 @@
         <script>
           $(document).ready(function(){
             
-           /* projectId = '<%=project._id%>';
-          $("#text-input").focus();
-            var files = new Array();
-            <% for(i=0; i<project.files.length; i++){ %>
-              var obj={
-              fileId : '<%=project.files[i].fileId%>',
-              fileName: '<%=project.files[i].fileName%>'
-              }
-              files.push(obj);
-
-            <%}%>            
-
-            $.each(files, function(index, value) { 
-              $("#project-files").append('<li><a href="#" onclick="loadFile(\''+value.fileId+'\', this)">'+value.fileName+'</a></li>');
-            });*/
-
-
             /** add onchange event for contenteditable 
             borrowed from :http://stackoverflow.com/questions/1391278/contenteditable-change-events **/
             $('[contenteditable]').live('focus', function() {
@@ -192,6 +178,11 @@
                 }
                 return $this;
             });
+
+
+            var editor = ace.edit("code-content");
+            editor.setTheme("ace/theme/monokai");
+            editor.getSession().setMode("ace/mode/javascript");
             
             
           });
@@ -272,20 +263,6 @@
 
             file.on('connect', function(){
               //file.emit('adduser', "<%= user.username %>");
-            });
-
-            function loadFile(value, ele){
-              file.emit('getFile', value);
-              $(ele).parent().parent().children().removeClass("active");
-              $(ele).parent().addClass("active");
-              //$('body').addClass("loading");
-            }
-
-            file.on('putFile', function (newFile) {
-              currentFile = newFile;
-              $("#code-content").text(currentFile.contents);              
-              //App.currentFile.update(fileData);
-             // $('body').removeClass("loading");         
             });
 
             $("#code-content").bind('change', function(){

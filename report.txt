@@ -28,3 +28,16 @@ http://codemirror.net/
 
 socket.io
 http://psitsmike.com/2011/09/node-js-and-socket-io-chat-tutorial/
+
+with backbone
+http://fzysqr.com/2011/02/28/nodechat-js-using-node-js-backbone-js-socket-io-and-redis-to-make-a-real-time-chat-app/
+http://developer.teradata.com/blog/jasonstrimpel/2011/11/backbone-js-and-socket-io
+
+ember examples
+http://jsfiddle.net/chrisconley/RqSn4/
+http://jsfiddle.net/Sly7/ZVFH2/34/
+
+https://github.com/JanDupal/Ember.js-example/blob/master/public/javascripts/application.js
+https://github.com/frodsan/emberjs-getting-started
+
+http://www.adobe.com/devnet/html5/articles/flame-on-a-beginners-guide-to-emberjs.html
