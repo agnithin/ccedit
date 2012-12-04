@@ -22,7 +22,7 @@
 
         <script src="/js/vendor/modernizr-2.6.1-respond-1.1.0.min.js"></script>        
     </head>
-    <body>
+    <body ng-app="myApp">
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
         <![endif]-->
@@ -59,46 +59,49 @@
         </div>
       </div>
 
-      <!--<script type="text/x-handlebars"> <!-- handelbars dynamic content -->
+      
         <div id="wrap" class="container-fluid">      
           
           <div class="row-fluid">
 
             <!-- Files list -->
-            <div class="span2">
+            <div class="span2" ng-controller="ProjectCtrl">
               <div class="well sidebar-nav">
                 <ul id="project-files" class="nav nav-list">
                   <li class="nav-header">Files</li>
                   <!--<li class="active"><a href="#">Sample file</a></li>-->
-                  <!--<li><a onclick="loadFile('50b3169fd5b15beb0e000005', this)" href="#">sample.html</a></li>-->
+                  <li ng-repeat="file in project.files">
+                    <a ng-click="openFile(file._id)" href="#">{{file.fileName}}</a>
+                  </li>
                 </ul>
               </div><!--/.well -->
             </div><!--/span-->
 
             <!-- main area for code -->
-            <div class="span8">
+            <div class="span8" ng-controller="FileCtrl">
 
               <div class="tabbable"> <!-- Only required for left/right tabs -->
                 <ul class="nav nav-tabs">
-                  <li class="active"><a href="#tab1" data-toggle="tab">filename1.html<button class="close" type="button">×</button></a></li>
-                  <li><a href="#tab2" data-toggle="tab">filename2.html</a></li>
+                  <li ng-repeat="file in openFiles" ng-class="{active: file._id == activeFile }"><!--class="active"-->
+                    <!-- moved the change tab code from bootstrp to angular js, due to need for getting currently active tab -->
+                    <a data-toggle="tab" ng-click="changeActiveFile(file._id)">{{file.name}}<button class="close" type="button" ng-click="closeFile(file._id)">×</button></a> <!--href="#{{file._id}}" -->
+                  </li>
                 </ul>
                 <div class="tab-content">
-                  <div class="tab-pane active" id="tab1">
-
+                  
+                  <div class="tab-pane" ng-class="{active: file._id == activeFile }" ng-repeat="file in openFiles" id="{{file._id}}">
                   
                     <div id="code-content" class="hero-unit" contenteditable="true">
-                      <p>{{App.currentFile.contents}}</p>
-                      
+                      {{file.contents}}                      
                     </div>
                     <div class="row-fluid">            
                     </div><!--/row-->
 
 
                   </div>
-                  <div class="tab-pane" id="tab2">
+                  <!--<div class="tab-pane" id="tab2">
                     <p>file 2</p>
-                  </div>
+                  </div>-->
                 </div>
               </div>
             </div><!--/span-->
@@ -134,7 +137,6 @@
 
         </div> <!-- /container -->
 
-      <!--</script><!-- end of handelbars dynamic content -->
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="../js/vendor/jquery-1.8.0.min.js"><\/script>')</script>
@@ -143,9 +145,13 @@
         <script src="/js/vendor/bootstrap.min.js"></script>
         <script src="/js/vendor/diff_match_patch.js"></script>
         
-        <script src="/js/vendor/handlebars-1.0.rc.1.js"></script>
-        <script src="/js/vendor/ember-1.0.0-pre.2.min.js"></script>
-        <!--<script src="/js/app.js"></script> -->
+        <!--http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js -->
+        <script src="/js/vendor/angular.min.js"></script>
+        <script src="/js/app.js"></script>
+        <script src="/js/services.js"></script>
+        <script src="/js/controllers.js"></script>
+        <script src="/js/filters.js"></script>
+        <script src="/js/directives.js"></script>
 
         <script src="/js/plugins.js"></script>
         <script src="/js/main.js"></script>
@@ -155,6 +161,7 @@
         <script>
           $(document).ready(function(){
             
+           /* projectId = '<%=project._id%>';
           $("#text-input").focus();
             var files = new Array();
             <% for(i=0; i<project.files.length; i++){ %>
@@ -168,7 +175,7 @@
 
             $.each(files, function(index, value) { 
               $("#project-files").append('<li><a href="#" onclick="loadFile(\''+value.fileId+'\', this)">'+value.fileName+'</a></li>');
-            });
+            });*/
 
 
             /** add onchange event for contenteditable 
@@ -189,11 +196,6 @@
             
           });
 
-          /*function loadFile(value, ele){
-              $("#code-content").load("../file/"+value);
-              $(ele).parent().parent().children().removeClass("active");
-              $(ele).parent().addClass("active");
-            }*/
         </script>
 
         <!-- Google Analytics Code -->
@@ -262,7 +264,6 @@
             **************************/
             var file = io.connect('http://localhost:3000/file');
             var currentFile;
-            var currentFileContents;
             var currentFile = {
               _id: null,
               name: null,

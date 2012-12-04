@@ -40,5 +40,20 @@ module.exports = function(io, models){
 	  socket.on('disconnect', function(){
 	    
 	  });
+
+	  /* move these to a seperate project websocket maybe?? */
+	  socket.on('getProject', function (data) {
+	    console.log("Get Project:" + data);   
+
+	    models.Project.findOne({"_id": data}, function(err, projectData){
+		  	if (projectData != null) {
+		  		socket.emit('putProject', projectData);
+			}else{
+				socket.emit('putProject', "");
+				console.log('Cannot Find the Project');
+			}
+		});
+	  });
+
 	});
 };
