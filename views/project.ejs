@@ -19,6 +19,7 @@
         </style>
         <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
         <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/codemirror.css">
 
         <script src="/js/vendor/modernizr-2.6.1-respond-1.1.0.min.js"></script>        
     </head>
@@ -68,7 +69,7 @@
             <div class="span2" ng-controller="ProjectCtrl">
               <div class="well sidebar-nav">
                 <ul id="project-files" class="nav nav-list">
-                  <li class="nav-header">Files</li>
+                  <li class="nav-header">Files <button class="close" type="button">+</button></li>
                   <!--<li class="active"><a href="#">Sample file</a></li>-->
                   <li ng-repeat="file in project.files">
                     <a ng-click="openFile(file.fileId)" href="#">{{file.fileName}}</a>
@@ -82,17 +83,16 @@
 
               <div class="tabbable"> <!-- Only required for left/right tabs -->
                 <ul class="nav nav-tabs">
-                  <li ng-repeat="file in openFiles" ng-class="{active: file._id == activeFile }"><!--class="active"-->
+                  <li ng-repeat="file in openFiles" ng-class="{active: file._id == activeFile._id }"><!--class="active"-->
                     <!-- moved the change tab code from bootstrp to angular js, due to need for getting currently active tab -->
                     <a data-toggle="tab" ng-click="changeActiveFile(file._id)">{{file.name}}<button class="close" type="button" ng-click="closeFile(file._id)">×</button></a> <!--href="#{{file._id}}" -->
                   </li>
                 </ul>
-                <div class="tab-content">
+                <div><!-- class="tab-content"> -->
                   
-                  <div class="tab-pane" ng-class="{active: file._id == activeFile }" ng-repeat="file in openFiles" id="{{file._id}}">
-                  
-                    <div id="code-content" class="hero-unit" contenteditable="true">
-                      {{file.contents}}                      
+                  <div class="tab-pane" class="active">                  
+                    <div id="code-content" class="hero-unit">
+                      <textarea ui-codemirror="{lineNumbers: 'true', mode:'htmlmixed'}" ng-model="activeFile.contents" ng-change="sendUpdatedFile()"></textarea>                      
                     </div>
                     <div class="row-fluid">            
                     </div><!--/row-->
@@ -145,8 +145,7 @@
         <script src="/js/vendor/bootstrap.min.js"></script>
         <script src="/js/vendor/diff_match_patch.js"></script>
 
-        <!-- change this to local -->
-        <script src="http://d1n0x3qji82z53.cloudfront.net/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/js/vendor/codemirror-compressed.js"></script>
         
         <!--http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js -->
         <script src="/js/vendor/angular.min.js"></script>
@@ -180,10 +179,7 @@
             });
 
 
-            var editor = ace.edit("code-content");
-            editor.setTheme("ace/theme/monokai");
-            editor.getSession().setMode("ace/mode/javascript");
-            
+            //var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('code-content'), {mode:  "htmlmixed" });           
             
           });
 
@@ -249,40 +245,6 @@
                 }
               });
             });
-
-            /**************************
-            * WEBSOCKET FILE OPERATIONS
-            **************************/
-            var file = io.connect('http://localhost:3000/file');
-            var currentFile;
-            var currentFile = {
-              _id: null,
-              name: null,
-              contents: null
-            }
-
-            file.on('connect', function(){
-              //file.emit('adduser', "<%= user.username %>");
-            });
-
-            $("#code-content").bind('change', function(){
-                file.emit('updateFile', {
-                  "contents":$("#code-content").text(),
-                  "name":currentFile.name,
-                  "_id":currentFile._id
-                });
-            });
-           
-
-            file.on('updateFile', function (newFile) {
-              if(currentFile._id == newFile._id){
-                var newText = getDiff(currentFile.contents, newFile.contents);
-                $("#code-content").html(newText);
-                currentFile=newFile;
-                //App.currentFile.update(fileData);
-              }                       
-            });
-            
 
             /**************************
             * MISC FUNCTIONS

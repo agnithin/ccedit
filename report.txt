@@ -23,7 +23,11 @@ https://github.com/werg/snucode
 
 syntax highlighting
 http://codemirror.net/
+ace
+http://ajaxplorer.info/
 
+ace with angularjs
+https://github.com/GoogleChrome/textdrive-app/blob/master/app/js/app.js
 
 
 socket.io
@@ -41,3 +45,9 @@ https://github.com/JanDupal/Ember.js-example/blob/master/public/javascripts/appl
 https://github.com/frodsan/emberjs-getting-started
 
 http://www.adobe.com/devnet/html5/articles/flame-on-a-beginners-guide-to-emberjs.html
+
+
+
+dan suggestions:
+file history: list of recently edited files
+some kind of version control system

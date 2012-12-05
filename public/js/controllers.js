@@ -25,17 +25,6 @@ function ProjectCtrl($scope, $location, $rootScope, socket) {
 function FileCtrl($scope, socket) {
   $scope.openFiles = [];
 
-  /*[{
-    '_id':'50b3169fd5b15beb0e000005',
-    'name':'sample.html',
-    'contents':'<p>retineg iv inwerin</p><h2>adfqwfgewrfgsdfg</h2>'
-  },
-  {
-    '_id':'50b3169fd5b15beb0e000006',
-    'name':'sampleTest.html',
-    'contents':'<p>newstuff</p><h2>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</h2>'
-  }];*/
-
   $scope.activeFile = ''; //$scope.openFiles[0]._id; // currently active tab
 
   $scope.openFile = function(fileId){
@@ -55,16 +44,12 @@ function FileCtrl($scope, socket) {
   }
 
   $scope.changeActiveFile = function(fileId){
-    $scope.activeFile=fileId;
+    $scope.activeFile=$scope.openFiles[getOpenFileIndex(fileId)];
   }
 
-  $scope.getActiveFileContents = function(){
-    var fileIndex = getOpenFileIndex($scope.activeFile);
-    if( fileIndex == -1){
-      return "";
-    }else{
-      return $scope.openFiles[fileIndex].contents;
-    }
+  $scope.sendUpdatedFile = function(){
+    console.log("file changed");
+    socket.emit('updateFile', $scope.activeFile);
   }
 
   socket.on('putFile', function (newFile) {
@@ -74,6 +59,16 @@ function FileCtrl($scope, socket) {
     }
     $scope.openFiles.push(newFile);
     $scope.changeActiveFile(newFile._id);
+  });
+
+  socket.on('updateFile', function (newFile) {
+    if($scope.activeFile._id == newFile._id){
+      $scope.activeFile = newFile;
+    }
+    var fileIndex = getOpenFileIndex(newFile._id);
+    if(fileIndex != -1){
+      $scope.openFiles[fileIndex] = newFile;
+    }
   });
 
   function getOpenFileIndex(fileId){
