@@ -65,7 +65,7 @@
           
           <div class="row-fluid">
 
-            <!-- Files list -->
+            <!-- ### FILE LLIST ### -->
             <div class="span2" ng-controller="ProjectCtrl">
               <div class="well sidebar-nav">
                 <ul id="project-files" class="nav nav-list">
@@ -78,7 +78,7 @@
               </div><!--/.well -->
             </div><!--/span-->
 
-            <!-- main area for code -->
+            <!-- ### CODE AREA ### -->
             <div class="span8" ng-controller="FileCtrl">
 
               <div class="tabbable"> <!-- Only required for left/right tabs -->
@@ -92,7 +92,7 @@
                   
                   <div class="tab-pane" class="active">                  
                     <div id="code-content" class="hero-unit">
-                      <textarea ui-codemirror="{lineNumbers: 'true', mode:'htmlmixed'}" ng-model="activeFile.contents" ng-change="sendUpdatedFile()"></textarea>                      
+                      <textarea ui-codemirror="{lineNumbers: 'true', mode:'htmlmixed'}" ng-model="activeFile.contents" ng-modal-instant ng-change="sendUpdatedFile()"></textarea>                      
                     </div>
                     <div class="row-fluid">            
                     </div><!--/row-->
@@ -106,27 +106,35 @@
               </div>
             </div><!--/span-->
 
-            <!-- online users -->
-            <div class="span2">
+            <!-- ### ONLINE USERS ### -->
+            <div class="span2" ng-controller="ChatCtrl">
+            <div>
               <div class="well sidebar-nav">
                 <ul id="online-users" class="nav nav-list">
                   <li class="nav-header">Online Users</li>
+                  <li ng-repeat="user in onlineUsers">{{user}}</li>
                 </ul>
               </div><!--/.well -->
             </div><!--/span-->
 
-            <!-- chat bar -->
-            <div class="span2">
+            <!-- ### CHAT BAR ### -->
+            <div>
               <div class="well sidebar-nav">
                 <ul class="nav nav-list">
                   <li class="nav-header">Chat</li>
-                  <li id="chat-alert-success" class="alert alert-info" style="display:none"></li>
-                  <li id="messages"></li>
+                  <li ng-repeat='notification in chatNotifications' class="alert alert-info">
+                     {{notification}} 
+                  </li>
+                  <li id="messages" ng-repeat="log in chatLog">
+                    <b>{{log.username}}:</b> {{log.data}}
+                  </li>
                 </ul>
-                  <textarea id="chat-text" rows="4" ></textarea><input type="button" value="Send" id="send-button">            
+                <textarea id="chat-text" rows="4" ng-model='chatText'></textarea>
+                <input type="button" value="Send" id="send-button" ng-click='sendChat()'>
                 
               </div><!--/.well -->
             </div><!--/span-->        
+          </div>
 
           </div><!--/row-->
           
@@ -136,7 +144,6 @@
           </footer>      
 
         </div> <!-- /container -->
-
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="../js/vendor/jquery-1.8.0.min.js"><\/script>')</script>
@@ -162,27 +169,7 @@
 
         <script>
           $(document).ready(function(){
-            
-            /** add onchange event for contenteditable 
-            borrowed from :http://stackoverflow.com/questions/1391278/contenteditable-change-events **/
-            $('[contenteditable]').live('focus', function() {
-                var $this = $(this);
-                $this.data('before', $this.html());
-                return $this;
-            }).live('blur keyup paste', function() {
-                var $this = $(this);
-                if ($this.data('before') !== $this.html()) {
-                    $this.data('before', $this.html());
-                    $this.trigger('change');
-                }
-                return $this;
-            });
-
-
-            //var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('code-content'), {mode:  "htmlmixed" });           
-            
           });
-
         </script>
 
         <!-- Google Analytics Code -->
@@ -196,55 +183,8 @@
 
 
         <script>
-            /**************************
-            * WEBSOCKET CHAT OPERATIONS
-            **************************/
-            var chat = io.connect('http://localhost:3000/chat');
 
-            // on connection to server, ask for user's name with an anonymous callback
-            chat.on('connect', function(){
-              // call the server-side function 'adduser' and send one parameter (value of prompt)
-              chat.emit('adduser', "<%= user.username %>");
-            });
-
-            // listener, whenever the server emits 'updatechat', this updates the chat body
-            chat.on('updatechat', function (username, data) {
-              if(username=='SERVER'){
-                $("#chat-alert-success").text(data).fadeIn();
-                window.setTimeout( function(){
-                    $("#chat-alert-success").slideUp();
-                }, 5000);
-              }else{
-                $('#messages').append('<b>'+username + ':</b> ' + data + '<br>');
-              }
-            });
-
-            // listener, whenever the server emits 'updateusers', this updates the username list
-            chat.on('updateusers', function(data) {
-              $('#online-users').empty();
-              $.each(data, function(key, value) {
-                $('#online-users').append('<li>' + key + '</li>');
-              });
-            });
-
-            // on load of page
-            $(function(){
-              // when the client clicks SEND
-              $('#send-button').click( function() {
-                var message = $('#chat-text').val();
-                $('#chat-text').val('');
-                // tell server to execute 'sendchat' and send along one parameter
-                chat.emit('sendchat', message);
-              });
-
-              // when the client hits ENTER on their keyboard
-              $('#chat-text').keypress(function(e) {
-                if(e.which == 13) {
-                  $('#send-button').click();
-                  return false;
-                }
-              });
-            });
+          var username = "<%= user.username %>";
 
             /**************************
             * MISC FUNCTIONS

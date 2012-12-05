@@ -2,7 +2,8 @@
 * Controllers
 **************************/
 
-function ProjectCtrl($scope, $location, $rootScope, socket) {
+/** PROJECT CONTROLLER **/
+function ProjectCtrl($scope, $location, $rootScope, fileSocket) {
   $scope.project = '';
   
   //ugly hack to get project info, find proper angularjs initialization
@@ -13,23 +14,23 @@ function ProjectCtrl($scope, $location, $rootScope, socket) {
     $rootScope.$broadcast('openFile', fileId);
   }
 
-  socket.emit('getProject', projectId);
+  fileSocket.emit('getProject', projectId);
 
-  socket.on('putProject', function (newProject) {
+  fileSocket.on('putProject', function (newProject) {
     $scope.project = newProject;
   });
 }
 
 
-
-function FileCtrl($scope, socket) {
+/** FILE CONTROLLER **/
+function FileCtrl($scope, fileSocket) {
   $scope.openFiles = [];
 
   $scope.activeFile = ''; //$scope.openFiles[0]._id; // currently active tab
 
   $scope.openFile = function(fileId){
     if(getOpenFileIndex(fileId) == -1){ // if file not open then request file
-      socket.emit('getFile', fileId);
+      fileSocket.emit('getFile', fileId);
     }
     $scope.changeActiveFile(fileId);
   }
@@ -48,11 +49,10 @@ function FileCtrl($scope, socket) {
   }
 
   $scope.sendUpdatedFile = function(){
-    console.log("file changed");
-    socket.emit('updateFile', $scope.activeFile);
+    fileSocket.emit('updateFile', $scope.activeFile);
   }
 
-  socket.on('putFile', function (newFile) {
+  fileSocket.on('putFile', function (newFile) {
     if(newFile == ''){
       alert("file Not Found"); // remove alert and put bootstrap error message
       return;
@@ -61,7 +61,7 @@ function FileCtrl($scope, socket) {
     $scope.changeActiveFile(newFile._id);
   });
 
-  socket.on('updateFile', function (newFile) {
+  fileSocket.on('updateFile', function (newFile) {
     if($scope.activeFile._id == newFile._id){
       $scope.activeFile = newFile;
     }
@@ -85,4 +85,42 @@ function FileCtrl($scope, socket) {
   $scope.$on('openFile', function(event, fileId) {
     $scope.openFile(fileId);
   });
+}
+
+/** CHAT CONTROLLER **/
+function ChatCtrl($scope, $timeout, chatSocket) {
+  
+  $scope.chatLog = new Array();
+  $scope.chatNotifications = [];
+  $scope.onlineUsers = [];
+  $scope.chatText = '';
+
+  // on connection to server, ask for user's name with an anonymous callback
+  chatSocket.on('connect', function(){
+    // call the server-side function 'adduser' and send one parameter (value of prompt)
+    chatSocket.emit('adduser', username);
+  });
+
+  // listener, whenever the server emits 'updatechat', this updates the chat body
+  chatSocket.on('updatechat', function (username, data) {
+    if(username == 'SERVER'){
+      $scope.chatNotifications.push(data);
+      $timeout(function(){
+        $scope.chatNotifications.pop();
+      }, 3000);
+    }else{
+      $scope.chatLog.push({'username': username, 'data' : data});
+      //$scope.chatLog += '<b>'+username + ':</b> ' + data + '<br>'
+    }
+  }); 
+
+  // listener, whenever the server emits 'updateusers', this updates the username list
+  chatSocket.on('updateusers', function(data) {
+    $scope.onlineUsers = data;
+  });
+
+  $scope.sendChat = function(){
+    chatSocket.emit('sendchat', $scope.chatText);
+    $scope.chatText = '';
+  }
 }
