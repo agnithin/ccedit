@@ -19,17 +19,8 @@ module.exports = function (app, models, mongoose) {
 	  
 	});
 
-	app.get('/project/:id', ensureAuthenticated, function(req, res){
-	  models.Project.findOne({"_id": req.params.id}, function(err, project){
-		  	if (project != null) {
-		  		console.log('Found the Project:' + project.name);
-		  		res.render('project', { user: req.user, project:project });
-			}else{
-				console.log('Cannot Find the Project');
-			}
-		});
-
-	  
+	app.get('/project/:id', ensureAuthenticated, function(req, res){	  
+		res.render('project', { 'username': req.user.username, 'projectId':req.params.id });
 	});
 
 	app.get('/login', function(req, res){

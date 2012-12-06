@@ -1,5 +1,5 @@
 
-module.exports = function(io, models){
+module.exports = function(io){
 	
 	// usernames which are currently connected to the chat
 	var usernames = {};

@@ -3,16 +3,23 @@
 **************************/
 
 /** PROJECT CONTROLLER **/
-function ProjectCtrl($scope, $location, $rootScope, fileSocket) {
-  $scope.project = '';
-  
-  //ugly hack to get project info, find proper angularjs initialization
-  var url = $location.absUrl().split("/");
-  var projectId = url[url.length-1];
+function ProjectCtrl($scope, $rootScope, fileSocket) {
+  $scope.project = {'_id':projectId, 'name':'New Project'};
+  $scope.username = username;
+  $scope.newFileName;
+  $scope.modal = {'header':'asdf', 'body':'asdf', 'buttons':[{'display':'df','action':'add'}]};
 
   $scope.openFile = function(fileId){
     $rootScope.$broadcast('openFile', fileId);
   }
+
+  $scope.addFile = function(){
+   fileSocket.emit('createFile', {'projectId':$scope.project._id, 'fileName':$scope.newFileName});
+  };
+
+  $scope.doAction = function(){
+   console.log("i m inn");
+  };
 
   fileSocket.emit('getProject', projectId);
 
@@ -26,7 +33,8 @@ function ProjectCtrl($scope, $location, $rootScope, fileSocket) {
 function FileCtrl($scope, fileSocket) {
   $scope.openFiles = [];
 
-  $scope.activeFile = ''; //$scope.openFiles[0]._id; // currently active tab
+  var emptyFile = {'_id':'', 'name':'','contents':''};
+  $scope.activeFile = emptyFile; //$scope.openFiles[0]._id; // currently active tab
 
   $scope.openFile = function(fileId){
     if(getOpenFileIndex(fileId) == -1){ // if file not open then request file
@@ -39,8 +47,12 @@ function FileCtrl($scope, fileSocket) {
     var openFileIndex = getOpenFileIndex(fileId);
      if(openFileIndex != -1){
       $scope.openFiles.splice(openFileIndex,1);
-        if($scope.openFiles.length>0) 
-          $scope.changeActiveFile($scope.openFiles[0]._id); 
+        if($scope.openFiles.length>0){ 
+          $scope.changeActiveFile($scope.openFiles[0]._id);
+        }else{
+          $scope.activeFile = emptyFile;
+        }
+
      }
   }
 
@@ -49,7 +61,9 @@ function FileCtrl($scope, fileSocket) {
   }
 
   $scope.sendUpdatedFile = function(){
-    fileSocket.emit('updateFile', $scope.activeFile);
+    if($scope.activeFile._id != ''){
+      fileSocket.emit('updateFile', $scope.activeFile);
+    }
   }
 
   fileSocket.on('getFile', function (newFile) {
@@ -86,6 +100,7 @@ function FileCtrl($scope, fileSocket) {
     $scope.openFile(fileId);
   });
 }
+
 
 /** CHAT CONTROLLER **/
 function ChatCtrl($scope, $timeout, chatSocket) {

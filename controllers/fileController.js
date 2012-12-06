@@ -23,13 +23,33 @@ module.exports = function(io, models){
 
 	    socket.broadcast.emit('updateFile',  data);
 
-	    models.File.findById(data._id, function(err, file){
-		  	if (file != null) {
-		  		file.name = data.name; // so that same function can be used for file renaming
-		  		file.contents = data.contents;
-		  		file.save();
+	    models.File.findById(data._id, function(err, oldfile){
+		  	if (oldfile != null) {
+		  		oldfile.name = data.name; // so that same function can be used for file renaming
+		  		oldfile.contents = data.contents;
+		  		oldfile.save();
 			}else{
 				console.log('Cannot Find the File: ' + data._id);
+			}
+		})
+	  });
+
+	  socket.on('createFile', function (data) {
+	    console.log("create File:" + data.projectId + " : " +data.fileName);   
+
+	    var newFile = new models.File();
+	    newFile.name = data.fileName;
+	    newFile.contents = '';	    
+
+	    models.Project.findById(data.projectId, function(err, project){
+		  	if (project != null) {
+		  		newFile.save();
+		  		//console.log("### new File" + newFile._id + " : " + newFile.name);
+		  		project.files.push({'fileId':newFile._id, 'fileName':newFile.name});
+		  		project.save();
+		  		file.emit('getProject',  project);
+			}else{
+				console.log('Cannot Find the Project: ' + projectId);
 			}
 		})
 	  });
