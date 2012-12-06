@@ -1,11 +1,9 @@
-/** Project Schema for CC-Edit **/
-
-var mongoose = require('mongoose');
-
+/**************************
+* Project Schema
+**************************/
 module.exports = function(mongoose) {
   var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
-  
 
   // Define schema
   var ProjectSchema = new Schema({

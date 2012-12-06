@@ -6,47 +6,25 @@ var express = require('express')
   , routes = require('./routes')
   , http = require('http')
   , path = require('path')
-  , mongoose = require('mongoose');
-
-var passport = require('passport')
+  , mongoose = require('mongoose')
+  , passport = require('passport')
   , TwitterStrategy = require('passport-twitter').Strategy;
+
+var environment = require('./environment.js')
+  , service = require('./service.js');
+service.init(environment);
 
 require('./auth.js')(passport, TwitterStrategy);
 
-//var db = mongoose.createConnection('mongodb://localhost/ccedit');
-
 var models = {};
-models.User = require('./models/user')(mongoose);
-models.Project = require('./models/project')(mongoose);
-models.File = require('./models/file')(mongoose);
+models.User = service.useModel('user');
+models.Project = service.useModel('project');
+models.File = service.useModel('file');
 
 var app = express();
+require('./configuration')(app, express, path, passport);
 
-app.configure(function(){
-  app.set('port', process.env.PORT || 3000);
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'ejs');
-  app.use(express.favicon());
-  app.use(express.logger('dev'));
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-
-  app.use(express.cookieParser()); 
-  app.use(express.session({secret:'something'}));
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  app.use(app.router);
-  app.use(express.static(path.join(__dirname, 'public')));
-
-  mongoose.connect('mongodb://localhost/ccedit');
-});
-
-app.configure('development', function(){
-  app.use(express.errorHandler());
-});
-
-// configuration for express etc
+// include routes
 require('./routes/index')(app, models, mongoose)
 require('./routes/auth')(app, passport)
 
@@ -57,6 +35,5 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 // websocket controllers
 var io = require('socket.io').listen(server);
 
-require('./chatController.js')(io);
-require('./fileController.js')(io, models);
-
+require('./controllers/chatController.js')(io);
+require('./controllers/fileController.js')(io, models);

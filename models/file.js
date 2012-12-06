@@ -1,11 +1,11 @@
-/** File Schema for CC-Edit **/
-
+/**************************
+* File Schema
+**************************/
 var mongoose = require('mongoose');
 
 module.exports = function(mongoose) {
   var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
-  
 
   // Define schema
   var FileSchema = new Schema({

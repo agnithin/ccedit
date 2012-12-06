@@ -16,7 +16,7 @@ function ProjectCtrl($scope, $location, $rootScope, fileSocket) {
 
   fileSocket.emit('getProject', projectId);
 
-  fileSocket.on('putProject', function (newProject) {
+  fileSocket.on('getProject', function (newProject) {
     $scope.project = newProject;
   });
 }
@@ -52,7 +52,7 @@ function FileCtrl($scope, fileSocket) {
     fileSocket.emit('updateFile', $scope.activeFile);
   }
 
-  fileSocket.on('putFile', function (newFile) {
+  fileSocket.on('getFile', function (newFile) {
     if(newFile == ''){
       alert("file Not Found"); // remove alert and put bootstrap error message
       return;

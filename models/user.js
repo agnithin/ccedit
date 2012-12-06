@@ -1,18 +1,10 @@
-/** User Schema for CC-Edit **/
-
-var mongoose = require('mongoose');
-
+/**************************
+* User Schema
+**************************/
 module.exports = function(mongoose) {
   var collection = 'User';
   var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
-
-  // Define schema
-  /*var ProjectLinkSchema = new Schema({
-        projectId        : Number
-      , permissions      : String
-    });*/
-
 
   var UserSchema = new Schema({
       userId : {type: String, required: true}

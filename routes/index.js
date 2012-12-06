@@ -1,15 +1,8 @@
 
 module.exports = function (app, models, mongoose) {
 
-	app.get('/', function(req, res){
-	  //console.log(user);
+	app.get('/', ensureAuthenticated, function(req, res){
 
-	  	// Move this code to appropriate place --------------------------
-	  	var checkConnectionExists = (mongoose.connection.readyState === 1 || mongoose.connection.readyState === 2);
-		if(!checkConnectionExists)
-			console.log("Connection Error");
-		//---------------------------------------------------------------
-		
 		if(req.user){
 		  	models.User.findOne({"userId": req.user.username}, function(err, user){
 			  	if (user != null) {
@@ -33,20 +26,6 @@ module.exports = function (app, models, mongoose) {
 		  		res.render('project', { user: req.user, project:project });
 			}else{
 				console.log('Cannot Find the Project');
-			}
-		});
-
-	  
-	});
-
-	app.get('/file/:id', ensureAuthenticated, function(req, res){
-	  models.File.findOne({"_id": req.params.id}, function(err, file){
-		  	if (file != null) {
-		  		console.log('Found the File:' + file.name);
-		  		res.contentType('json');
-  				res.send(file);
-			}else{
-				console.log('Cannot Find the File');
 			}
 		});
 
