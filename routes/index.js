@@ -23,6 +23,29 @@ module.exports = function (app, models, mongoose) {
 		res.render('project', { 'username': req.user.username, 'projectId':req.params.id });
 	});
 
+	app.get('/project/create/:projectName', ensureAuthenticated, function(req, res){	  
+		
+		models.User.findOne({"userId": req.user.username}, function(err, user){
+			  	if (user != null) {
+			  		var newProject = new models.Project();
+			  		var permissions = 'rw';
+	    			newProject.name = req.params.projectName;
+	    			newProject.users.push({'userId': user._id, 'permissions': permissions});
+	    			newProject.save();
+	    			user.projects.push(	{
+										"projectId" : newProject._id,
+										"projectName" : req.params.projectName,
+										"permissions" : permissions
+									});
+	    			user.save();
+	    			res.redirect('/project/'+newProject._id)
+				}else{
+					console.log('Cannot Find the User');
+				}
+		  	});
+
+	});
+
 	app.get('/login', function(req, res){
 	  res.render('login', { user: req.user });
 	});

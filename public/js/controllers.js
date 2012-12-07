@@ -29,31 +29,13 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   $scope.deleteFile = function(fileId, fileName){
     $rootScope.$broadcast('closeFile', fileId);
 
-    bootbox.confirm("Are you sure?", function(confirmed) {
+    bootbox.confirm("Are you sure you want to delete "+fileName+"?", function(confirmed) {
                     if(confirmed){
                       fileSocket.emit('deleteFile', {'projectId':$scope.project._id, 'fileId':fileId});
                     }
-                });
-    /*$scope.modal = {'header':'Delete File', 
-                  'body':'Are you sure you want to delete fileName ?', 
-                  'buttons':[{'display':'Yes',
-                              'action':function(){
-                                  fileSocket.emit('deleteFile', {'projectId':$scope.project._id, 'fileId':fileId});
-                                  $('#myModal').modal('hide');
-                                }
-                            },
-                              {'display':'No',
-                              'action':function(){
-                                $('#myModal').modal('hide');
-                                }
-                            }]
-                            
-                  };
-
-   $('#myModal').modal({
-     keyboard: true
-   }) */            
+                });         
   };
+  /* TODO delete file push activity required to close file in ohter window */
 
   fileSocket.emit('getProject', projectId);
 
