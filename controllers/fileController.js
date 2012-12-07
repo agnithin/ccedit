@@ -51,7 +51,39 @@ module.exports = function(io, models){
 			}else{
 				console.log('Cannot Find the Project: ' + projectId);
 			}
+		});
+	  });
+
+	  socket.on('deleteFile', function (data) {
+	    console.log("delete File:" + data.projectId + " : " +data.fileId);
+	    models.Project.findById(data.projectId, function(err, project){
+		  	if (project != null) {
+		  		var fileIndex = -1;
+		  		for (var i =0; i < project.files.length; i++){
+		  		   if (project.files[i].fileId == data.fileId) {
+		  		      fileIndex = i;
+		  		   }
+		  		 }
+		  		if(fileIndex!=-1){
+		  			project.files.splice(fileIndex, 1);
+		  			project.save();
+		  		}
+		  		
+	  		    models.File.findById(data.fileId, function(err, oldfile){
+	  			  	if (oldfile != null) {
+	  			  		oldfile.remove();
+	  				}else{
+	  					console.log('Cannot Find the File: ' + data._id);
+	  				}
+	  			});
+		  		file.emit('getProject',  project);
+			}else{
+				console.log('Cannot Find the Project: ' + projectId);
+			}
 		})
+
+
+
 	  });
 
 	  socket.on('disconnect', function(){

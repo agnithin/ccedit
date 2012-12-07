@@ -7,7 +7,15 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   $scope.project = {'_id':projectId, 'name':'New Project'};
   $scope.username = username;
   $scope.newFileName;
-  $scope.modal = {'header':'asdf', 'body':'asdf', 'buttons':[{'display':'df','action':'add'}]};
+  $scope.modal = {'header':'asdf', 
+                  'body':'asdf', 
+                  'buttons':[{'display':'df',
+                              'action':function(){
+                                console.log("lets see if this works");
+                              }
+                            }]
+                  };
+  $scope.showModal = false;
 
   $scope.openFile = function(fileId){
     $rootScope.$broadcast('openFile', fileId);
@@ -15,10 +23,36 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
 
   $scope.addFile = function(){
    fileSocket.emit('createFile', {'projectId':$scope.project._id, 'fileName':$scope.newFileName});
+   $scope.newFileName = '';
   };
 
-  $scope.doAction = function(){
-   console.log("i m inn");
+  $scope.deleteFile = function(fileId, fileName){
+    $rootScope.$broadcast('closeFile', fileId);
+
+    bootbox.confirm("Are you sure?", function(confirmed) {
+                    if(confirmed){
+                      fileSocket.emit('deleteFile', {'projectId':$scope.project._id, 'fileId':fileId});
+                    }
+                });
+    /*$scope.modal = {'header':'Delete File', 
+                  'body':'Are you sure you want to delete fileName ?', 
+                  'buttons':[{'display':'Yes',
+                              'action':function(){
+                                  fileSocket.emit('deleteFile', {'projectId':$scope.project._id, 'fileId':fileId});
+                                  $('#myModal').modal('hide');
+                                }
+                            },
+                              {'display':'No',
+                              'action':function(){
+                                $('#myModal').modal('hide');
+                                }
+                            }]
+                            
+                  };
+
+   $('#myModal').modal({
+     keyboard: true
+   }) */            
   };
 
   fileSocket.emit('getProject', projectId);
@@ -57,7 +91,11 @@ function FileCtrl($scope, fileSocket) {
   }
 
   $scope.changeActiveFile = function(fileId){
-    $scope.activeFile=$scope.openFiles[getOpenFileIndex(fileId)];
+    if(!fileId){
+      $scope.activeFile = emptyFile;
+    }else{
+      $scope.activeFile = $scope.openFiles[getOpenFileIndex(fileId)];
+    }
   }
 
   $scope.sendUpdatedFile = function(){
@@ -98,6 +136,21 @@ function FileCtrl($scope, fileSocket) {
   /* EVENTS */
   $scope.$on('openFile', function(event, fileId) {
     $scope.openFile(fileId);
+  });
+
+  $scope.$on('closeFile', function(event, fileId) {
+    console.log("closing file");    
+    var fileIndex = getOpenFileIndex(fileId);
+    if(fileIndex != -1){ // if file among open files      
+      $scope.openFiles.splice(fileIndex, 1);
+      if($scope.activeFile._id == fileId){ // if currently editing file, change tab
+        if($scope.openFiles.length > 0){
+          $scope.activeFile = $scope.openFiles[0];
+        }else{
+          $scope.changeActiveFile();
+        }
+      }      
+    }    
   });
 }
 

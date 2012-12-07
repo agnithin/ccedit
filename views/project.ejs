@@ -71,17 +71,15 @@
                   <li class="nav-header">Files <button class="close" type="button" ng-click="addNewFile()">+</button></li>
                   <!--<li class="active"><a href="#">Sample file</a></li>-->
                   <li ng-repeat="file in project.files">
-                    <a ng-click="openFile(file.fileId)" href="#">{{file.fileName}}                       
-                      <button class="close" ng-click=""><i class="icon-trash"></i></button>
-                      <button class="close" ng-click="deleteFile(file.fileId)"><i class="icon-edit"></i></button>
-                    </a>                    
+                    <a ng-click="openFile(file.fileId)" href="#">{{file.fileName}}</a>                     
+                      <button class="close" ng-click="deleteFile(file.fileId, file.fileName)"><i class="icon-trash"></i></button>
+                      <button class="close" ng-click=""><i class="icon-edit"></i></button>                                        
                   </li>
                   <li>
                     <form id="new-file" ng-submit="addFile()">
                       <input id="new-file" placeholder="Filename?" ng-model="newFileName">
                     </form>
                   </li>
-                  <a href="#myModal" role="button" class="btn" data-toggle="modal">Launch demo modal</a>
                 </ul>
               </div><!--/.well -->
             </div><!--/span-->
@@ -139,7 +137,7 @@
 
             </div><!--/CHAT AREA--> 
 
-            <div id="myModal"  class="modal hide fade">
+            <!--<div id="myModal"  class="modal hide fade">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h3>{{modal.header}}</h3>
@@ -148,9 +146,9 @@
                 <p>{{modal.body}}</p>
               </div>
               <div class="modal-footer">
-                <a ng-repeat='button in modal.buttons' ng-click="doAction('{{button.action}}')" class="btn">{{button.display}}</a>
+                <a ng-repeat='button in modal.buttons' ng-click="button.action()" class="btn">{{button.display}}</a>
               </div>
-            </div>
+            </div> -->
 
           </div><!--/row-->
  
@@ -167,6 +165,7 @@
 
         <script src="/socket.io/socket.io.js"></script>
         <script src="/js/vendor/bootstrap.min.js"></script>
+        <script src="/js/vendor/bootbox.min.js"></script>
         <script src="/js/vendor/diff_match_patch.js"></script>
 
         <script src="/js/vendor/codemirror-compressed.js"></script>
