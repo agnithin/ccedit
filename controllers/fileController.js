@@ -1,5 +1,5 @@
 
-module.exports = function(io, models){
+module.exports = function(io, models, diff_match_patch){
 	
 	var file = io
 	.of('/file')
@@ -21,13 +21,17 @@ module.exports = function(io, models){
 	  socket.on('updateFile', function (data) {
 	    console.log("Update File:" + data._id);   
 
-	    socket.broadcast.emit('updateFile',  data);
+	    socket.broadcast.to(socket.room).emit('updateFile',  data);
+	    
 
-	    models.File.findById(data._id, function(err, oldfile){
+	    models.File.findById(data.id, function(err, oldfile){
 		  	if (oldfile != null) {
-		  		oldfile.name = data.name; // so that same function can be used for file renaming
+		  		/*var dmp = new diff_match_patch();
+	    		console.log("Patched Text: " + dmp.patch_apply(data.patch, oldfile.contents));*/
+
+		  		/*oldfile.name = data.name; // so that same function can be used for file renaming
 		  		oldfile.contents = data.contents;
-		  		oldfile.save();
+		  		oldfile.save();*/
 			}else{
 				console.log('Cannot Find the File: ' + data._id);
 			}
@@ -47,7 +51,7 @@ module.exports = function(io, models){
 		  		//console.log("### new File" + newFile._id + " : " + newFile.name);
 		  		project.files.push({'fileId':newFile._id, 'fileName':newFile.name});
 		  		project.save();
-		  		file.emit('getProject',  project);
+		  		file.in(socket.room).emit('getProject',  project);
 			}else{
 				console.log('Cannot Find the Project: ' + projectId);
 			}
@@ -76,23 +80,23 @@ module.exports = function(io, models){
 	  					console.log('Cannot Find the File: ' + data._id);
 	  				}
 	  			});
-		  		file.emit('getProject',  project);
+		  		file.in(socket.room).emit('getProject',  project);
 			}else{
 				console.log('Cannot Find the Project: ' + projectId);
 			}
 		})
-
-
-
 	  });
 
 	  socket.on('disconnect', function(){
 	    
 	  });
 
-	  /* move these to a seperate project websocket maybe?? */
+	  /* move these to a seperate project websocket controller maybe?? */
 	  socket.on('getProject', function (projectId) {
 	    console.log("Get Project:" + projectId);   
+
+	    socket.join(projectId);
+	    socket.room = projectId;
 
 	    models.Project.findById(projectId, function(err, projectData){
 		  	if (projectData != null) {

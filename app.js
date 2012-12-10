@@ -7,6 +7,7 @@ var express = require('express')
   , http = require('http')
   , path = require('path')
   , mongoose = require('mongoose')
+  ,	diff_match_patch = require('./diff_match_patch_uncompressed.js')
   , passport = require('passport')
   , TwitterStrategy = require('passport-twitter').Strategy;
 
@@ -36,4 +37,6 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 var io = require('socket.io').listen(server);
 
 require('./controllers/chatController.js')(io);
-require('./controllers/fileController.js')(io, models);
+require('./controllers/fileController.js')(io, models, diff_match_patch);
+
+var dmp = new diff_match_patch();

@@ -68,16 +68,17 @@
             <div class="span2">
               <div class="well sidebar-nav">
                 <ul id="project-files" class="nav nav-list">
-                  <li class="nav-header">Files <button class="close" type="button" ng-click="addNewFile()">+</button></li>
+                  <li class="nav-header">Files <button class="close" type="button" ng-click="showAddFile()">+</button></li>
                   <!--<li class="active"><a href="#">Sample file</a></li>-->
                   <li ng-repeat="file in project.files">
                     <a ng-click="openFile(file.fileId)" href="#">{{file.fileName}}</a>                     
                       <button class="close" ng-click="deleteFile(file.fileId, file.fileName)"><i class="icon-trash"></i></button>
-                      <button class="close" ng-click=""><i class="icon-edit"></i></button>                                        
+                      <!--<button class="close" ng-click=""><i class="icon-edit"></i></button>  -->                                      
                   </li>
-                  <li>
+                  <li ng-show="showAddNewFileTextbox">
                     <form id="new-file" ng-submit="addFile()">
-                      <input id="new-file" placeholder="Filename?" ng-model="newFileName">
+                      <input id="new-file" placeholder="Specify the filename" ng-model="newFileName">
+                      <button class="close" ng-click="showAddNewFileTextbox=false"><i class="icon-remove"></i></button>
                     </form>
                   </li>
                 </ul>
@@ -108,50 +109,32 @@
             <!-- ### CHAT AREA ### -->
             <div class="span2" ng-controller="ChatCtrl">
               
-              <!-- ### ONLINE USERS ### -->
-              <div>
-                <div class="well sidebar-nav">
-                  <ul id="online-users" class="nav nav-list">
-                    <li class="nav-header">Online Users</li>
-                    <li ng-repeat="user in onlineUsers">{{user}}</li>
-                  </ul>
-                </div><!--/.well -->
+              <!-- ### ONLINE USERS ### -->              
+              <div class="well sidebar-nav">
+                <ul id="online-users" class="nav nav-list">
+                  <li class="nav-header">Online Users</li>
+                  <li ng-repeat="user in onlineUsers">{{user}}</li>
+                </ul>
               </div><!--/ONLINE USERS-->
 
-              <!-- ### CHAT BAR ### -->
-              <div>
-                <div class="well sidebar-nav">
-                  <ul class="nav nav-list">
-                    <li class="nav-header">Chat</li>
-                    <li ng-repeat='notification in chatNotifications' class="alert alert-info">
-                       {{notification}} 
-                    </li>
-                    <li id="messages" ng-repeat="log in chatLog">
-                      <b>{{log.username}}:</b> {{log.data}}
-                    </li>
-                  </ul>
-                  <textarea id="chat-text" rows="4" ng-model='chatText'></textarea>
-                  <input type="button" value="Send" id="send-button" ng-click='sendChat()'>                  
-                </div><!--/.well -->
+              <!-- ### CHAT BAR ### -->              
+              <div class="well sidebar-nav">
+                <ul class="nav nav-list">
+                  <li class="nav-header">Chat</li>
+                  <li ng-repeat='notification in chatNotifications' class="alert alert-info fade in">
+                     {{notification}} 
+                  </li>
+                  <li id="messages" ng-repeat="log in chatLog">
+                    <b>{{log.username}}:</b> {{log.data}}
+                  </li>
+                </ul>
+                <textarea id="chat-text" rows="4" ng-model='chatText'></textarea>
+                <input type="button" value="Send" id="send-button" ng-click='sendChat()'>               
               </div><!-- /CHAT BAR -->
 
             </div><!--/CHAT AREA--> 
 
-            <!--<div id="myModal"  class="modal hide fade">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h3>{{modal.header}}</h3>
-              </div>
-              <div class="modal-body">
-                <p>{{modal.body}}</p>
-              </div>
-              <div class="modal-footer">
-                <a ng-repeat='button in modal.buttons' ng-click="button.action()" class="btn">{{button.display}}</a>
-              </div>
-            </div> -->
-
-          </div><!--/row-->
- 
+          </div><!--/row--> 
           
           <hr>
           <footer>
@@ -206,18 +189,44 @@
           /**************************
           * MISC FUNCTIONS
           **************************/
-          function getDiff(text1, text2) {
-            var dmp = new diff_match_patch();
-            dmp.Diff_Timeout = 1;
-            dmp.Diff_EditCost = 4;
+          var dmp = new diff_match_patch();
+          var patch_text = '';
 
-            var d = dmp.diff_main(text1, text2);
+          function diff_launch(text1, text2) {
 
-            //dmp.diff_cleanupSemantic(d);
-            dmp.diff_cleanupEfficiency(d);
+            var diff = dmp.diff_main(text1, text2, true);
 
-            var ds = dmp.diff_prettyHtml(d);
-            return ds;
+            if (diff.length > 2) {
+              dmp.diff_cleanupSemantic(diff);
+            }
+
+            var patch_list = dmp.patch_make(text1, text2, diff);
+            //patch_text = dmp.patch_toText(patch_list);
+
+            return patch_list;
+          }
+
+
+          function patch_launch(text1, patch_list) {
+            //var patches = dmp.patch_fromText(patch_text);
+            //var results = dmp.patch_apply(patches, text1);
+            
+            var results = dmp.patch_apply(patch_list, text1);
+
+            var ret =  results[0];
+            
+            /*results = results[1];
+            var html = '';
+            for (var x = 0; x < results.length; x++) {
+              if (results[x]) {
+                html += 'Ok';
+              } else {
+                html += 'Fail';
+              }
+            }
+            console.log("Status:" + html);*/
+
+            return ret;
           }
         </script>
 

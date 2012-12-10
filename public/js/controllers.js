@@ -7,6 +7,8 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   $scope.project = {'_id':projectId, 'name':'New Project'};
   $scope.username = username;
   $scope.newFileName;
+  $scope.showAddNewFileTextbox = false;
+
   $scope.modal = {'header':'asdf', 
                   'body':'asdf', 
                   'buttons':[{'display':'df',
@@ -24,7 +26,12 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   $scope.addFile = function(){
    fileSocket.emit('createFile', {'projectId':$scope.project._id, 'fileName':$scope.newFileName});
    $scope.newFileName = '';
+   $scope.showAddNewFileTextbox = false;
   };
+
+  $scope.showAddFile = function(){
+    $scope.showAddNewFileTextbox = true;
+  }
 
   $scope.deleteFile = function(fileId, fileName){
     $rootScope.$broadcast('closeFile', fileId);
@@ -37,7 +44,10 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   };
   /* TODO delete file push activity required to close file in ohter window */
 
-  fileSocket.emit('getProject', projectId);
+  fileSocket.on('connect', function(){
+    fileSocket.emit('getProject', projectId);
+  });
+  
 
   fileSocket.on('getProject', function (newProject) {
     $scope.project = newProject;
@@ -51,12 +61,12 @@ function FileCtrl($scope, fileSocket) {
 
   var emptyFile = {'_id':'', 'name':'','contents':''};
   $scope.activeFile = emptyFile; //$scope.openFiles[0]._id; // currently active tab
+  $scope.activeFileContentsBeforeChange = '';
 
   $scope.openFile = function(fileId){
     if(getOpenFileIndex(fileId) == -1){ // if file not open then request file
       fileSocket.emit('getFile', fileId);
     }
-    $scope.changeActiveFile(fileId);
   }
 
   $scope.closeFile = function(fileId){
@@ -77,12 +87,19 @@ function FileCtrl($scope, fileSocket) {
       $scope.activeFile = emptyFile;
     }else{
       $scope.activeFile = $scope.openFiles[getOpenFileIndex(fileId)];
+      $scope.activeFileContentsBeforeChange = $scope.activeFile.contents;
     }
   }
 
   $scope.sendUpdatedFile = function(){
     if($scope.activeFile._id != ''){
-      fileSocket.emit('updateFile', $scope.activeFile);
+      var diff = diff_launch($scope.activeFileContentsBeforeChange, $scope.activeFile.contents);
+      /*console.log("=======Unpatched Text\n" + $scope.activeFileContentsBeforeChange);
+      console.log("=======Patch\n" + diff);
+      console.log("=======patched text\n" + patch_launch($scope.activeFileContentsBeforeChange, diff));*/
+      //fileSocket.emit('updateFile', $scope.activeFile);
+      fileSocket.emit('updateFile', {'id':$scope.activeFile._id, 'patch': diff});
+      $scope.activeFileContentsBeforeChange = $scope.activeFile.contents;
     }
   }
 
@@ -95,14 +112,23 @@ function FileCtrl($scope, fileSocket) {
     $scope.changeActiveFile(newFile._id);
   });
 
-  fileSocket.on('updateFile', function (newFile) {
-    if($scope.activeFile._id == newFile._id){
-      $scope.activeFile = newFile;
-    }
-    var fileIndex = getOpenFileIndex(newFile._id);
+  fileSocket.on('updateFile', function (fileUpdate) {
+    var fileIndex = getOpenFileIndex(fileUpdate.id);
     if(fileIndex != -1){
-      $scope.openFiles[fileIndex] = newFile;
+      /*console.log("=======Unpatched Text\n" + $scope.activeFile.contents);
+      console.log("Patch =======\n" + fileUpdate.diff);*/
+      var patchedText = patch_launch($scope.activeFile.contents, fileUpdate.patch);
+      //console.log("Patched Text =======\n" + patchedText);
+      $scope.openFiles[fileIndex].contents = patchedText;
+      //$scope.openFiles[fileIndex] = fileUpdate;
     }
+    if($scope.activeFile._id == fileUpdate.id){      
+      //$scope.activeFile.contents = patch_launch($scope.activeFile.contents, fileUpdate.diff);
+      /* activeFile should be automatically refreshed since it is a pointer to an object in openFiles
+        but this is not happening. is it cause of angularjs? figure out why */
+      $scope.activeFile = $scope.openFiles[fileIndex];
+      $scope.activeFileContentsBeforeChange = $scope.activeFile.contents;
+    }    
   });
 
   function getOpenFileIndex(fileId){
@@ -148,7 +174,7 @@ function ChatCtrl($scope, $timeout, chatSocket) {
   // on connection to server, ask for user's name with an anonymous callback
   chatSocket.on('connect', function(){
     // call the server-side function 'adduser' and send one parameter (value of prompt)
-    chatSocket.emit('adduser', username);
+    chatSocket.emit('adduser', {'projectId':$scope.project._id, 'username':$scope.username});
   });
 
   // listener, whenever the server emits 'updatechat', this updates the chat body
@@ -156,8 +182,8 @@ function ChatCtrl($scope, $timeout, chatSocket) {
     if(username == 'SERVER'){
       $scope.chatNotifications.push(data);
       $timeout(function(){
-        $scope.chatNotifications.pop();
-      }, 3000);
+          $scope.chatNotifications.shift();
+        }, 3000);
     }else{
       $scope.chatLog.push({'username': username, 'data' : data});
       //$scope.chatLog += '<b>'+username + ':</b> ' + data + '<br>'
