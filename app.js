@@ -7,7 +7,7 @@ var express = require('express')
   , http = require('http')
   , path = require('path')
   , mongoose = require('mongoose')
-  ,	diff_match_patch = require('./diff_match_patch_uncompressed.js')
+  ,	diff_match_patch = require('./diff_match_patch_uncompressed')
   , passport = require('passport')
   , TwitterStrategy = require('passport-twitter').Strategy;
 
@@ -38,5 +38,3 @@ var io = require('socket.io').listen(server);
 
 require('./controllers/chatController.js')(io);
 require('./controllers/fileController.js')(io, models, diff_match_patch);
-
-var dmp = new diff_match_patch();

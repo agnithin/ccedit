@@ -66,6 +66,8 @@ function FileCtrl($scope, fileSocket) {
   $scope.openFile = function(fileId){
     if(getOpenFileIndex(fileId) == -1){ // if file not open then request file
       fileSocket.emit('getFile', fileId);
+    }else{// if file already among open files then activate tab
+      $scope.changeActiveFile(fileId);
     }
   }
 
@@ -98,7 +100,7 @@ function FileCtrl($scope, fileSocket) {
       console.log("=======Patch\n" + diff);
       console.log("=======patched text\n" + patch_launch($scope.activeFileContentsBeforeChange, diff));*/
       //fileSocket.emit('updateFile', $scope.activeFile);
-      fileSocket.emit('updateFile', {'id':$scope.activeFile._id, 'patch': diff});
+      fileSocket.emit('updateFile', {'id':$scope.activeFile._id, 'name':$scope.activeFile.name, 'patch': diff});
       $scope.activeFileContentsBeforeChange = $scope.activeFile.contents;
     }
   }

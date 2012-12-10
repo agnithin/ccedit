@@ -19,19 +19,16 @@ module.exports = function(io, models, diff_match_patch){
 	  });
 
 	  socket.on('updateFile', function (data) {
-	    console.log("Update File:" + data._id);   
+	    console.log("Update File:" + data.id);   
 
-	    socket.broadcast.to(socket.room).emit('updateFile',  data);
-	    
+	    socket.broadcast.to(socket.room).emit('updateFile',  data);	    
 
 	    models.File.findById(data.id, function(err, oldfile){
 		  	if (oldfile != null) {
-		  		/*var dmp = new diff_match_patch();
-	    		console.log("Patched Text: " + dmp.patch_apply(data.patch, oldfile.contents));*/
-
-		  		/*oldfile.name = data.name; // so that same function can be used for file renaming
-		  		oldfile.contents = data.contents;
-		  		oldfile.save();*/
+		  		var dmp = new diff_match_patch.diff_match_patch();
+	    		oldfile.name = data.name; // so that same function can be used for file renaming
+		  		oldfile.contents = dmp.patch_apply(data.patch, oldfile.contents)[0];
+		  		oldfile.save();
 			}else{
 				console.log('Cannot Find the File: ' + data._id);
 			}
