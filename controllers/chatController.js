@@ -24,9 +24,9 @@ module.exports = function(io){
 	    	onlineUsers[socket.room].push(socket.username);
 	    }
 	    // echo to client they've connected
-	    socket.emit('updatechat', 'SERVER', 'you have connected');
+	    socket.emit('notify', {type:'info', text:'You have successfully connected'});
 	    // echo globally (all clients) that a person has connected
-	    socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', data.username + ' in online');
+	    socket.broadcast.to(socket.room).emit('notify', {type:'info', text:data.username + ' in online'});
 	    // update the list of users in chat, client-side
 	    chat.in(socket.room).emit('updateusers', onlineUsers[socket.room]);
 	  });

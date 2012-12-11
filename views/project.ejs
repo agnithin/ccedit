@@ -10,16 +10,17 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-        <link rel="stylesheet" href="../css/bootstrap.min.css">
+        <link rel="stylesheet" href="../css/bootstrap.min.css">        
+        <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/codemirror.css">
+        <link rel="stylesheet" href="/css/bootstrap-notify.css">
         <style>
             body {
                 padding-top: 60px;
                 padding-bottom: 40px;
             }
         </style>
-        <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
-        <link rel="stylesheet" href="/css/main.css">
-        <link rel="stylesheet" href="/css/codemirror.css">
 
         <script src="/js/vendor/modernizr-2.6.1-respond-1.1.0.min.js"></script>        
     </head>
@@ -64,7 +65,7 @@
           
           <div class="row-fluid">
 
-            <!-- ### FILE LLIST ### -->
+            <!-- ### FILE LIST ### -->
             <div class="span2">
               <div class="well sidebar-nav">
                 <ul id="project-files" class="nav nav-list">
@@ -77,10 +78,11 @@
                   </li>
                   <li ng-show="showAddNewFileTextbox">
                     <form id="new-file" ng-submit="addFile()">
-                      <input id="new-file" placeholder="Specify the filename" ng-model="newFileName">
-                      <button class="close" ng-click="showAddNewFileTextbox=false"><i class="icon-remove"></i></button>
+                      <input id="new-file" placeholder="Specify the filename" ng-model="newFileName" focus-on="showAddNewFileTextbox">                      
                     </form>
+                    <button class="close" ng-click="showAddNewFileTextbox=false"><i class="icon-remove"></i></button>
                   </li>
+                  
                 </ul>
               </div><!--/.well -->
             </div><!--/span-->
@@ -121,9 +123,6 @@
               <div class="well sidebar-nav">
                 <ul class="nav nav-list">
                   <li class="nav-header">Chat</li>
-                  <li ng-repeat='notification in chatNotifications' class="alert alert-info fade in">
-                     {{notification}} 
-                  </li>
                   <li id="messages" ng-repeat="log in chatLog">
                     <b>{{log.username}}:</b> {{log.data}}
                   </li>
@@ -135,7 +134,7 @@
             </div><!--/CHAT AREA--> 
 
           </div><!--/row--> 
-          
+          <div class='notifications bottom-left'></div>
           <hr>
           <footer>
               <p>&copy; Nithin Anand Gangadharan 2012</p>
@@ -149,6 +148,7 @@
         <script src="/socket.io/socket.io.js"></script>
         <script src="/js/vendor/bootstrap.min.js"></script>
         <script src="/js/vendor/bootbox.min.js"></script>
+        <script src="/js/vendor/bootstrap-notify.js"></script>
         <script src="/js/vendor/diff_match_patch.js"></script>
 
         <script src="/js/vendor/codemirror-compressed.js"></script>
@@ -179,10 +179,7 @@
             s.parentNode.insertBefore(g,s)}(document,'script'));*/
         </script>
 
-
-
         <script>
-
           var username = "<%= username %>";
           var projectId = "<%= projectId %>";
 
@@ -212,7 +209,6 @@
             //var results = dmp.patch_apply(patches, text1);
             
             var results = dmp.patch_apply(patch_list, text1);
-
             var ret =  results[0];
             
             /*results = results[1];

@@ -30,7 +30,7 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   };
 
   $scope.showAddFile = function(){
-    $scope.showAddNewFileTextbox = true;
+    $scope.showAddNewFileTextbox = true;    
   }
 
   $scope.deleteFile = function(fileId, fileName){
@@ -42,7 +42,7 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
                     }
                 });         
   };
-  /* TODO delete file push activity required to close file in ohter window */
+  /* TODO delete file push activity required to close file in other window */
 
   fileSocket.on('connect', function(){
     fileSocket.emit('getProject', projectId);
@@ -52,6 +52,17 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   fileSocket.on('getProject', function (newProject) {
     $scope.project = newProject;
   });
+
+  fileSocket.on('notify', function (data) {
+    $scope.createNotification(data);
+  });
+
+  $scope.createNotification = function (notification){
+    $('.notifications').notify({
+        message: { 'text': notification.text },
+        type: notification.type
+      }).show();
+  }
 }
 
 
@@ -182,10 +193,12 @@ function ChatCtrl($scope, $timeout, chatSocket) {
   // listener, whenever the server emits 'updatechat', this updates the chat body
   chatSocket.on('updatechat', function (username, data) {
     if(username == 'SERVER'){
-      $scope.chatNotifications.push(data);
+      /*$scope.chatNotifications.push(data);
       $timeout(function(){
           $scope.chatNotifications.shift();
-        }, 3000);
+        }, 3000);*/
+      $scope.createNotification({type:'info', text:data});      
+
     }else{
       $scope.chatLog.push({'username': username, 'data' : data});
       //$scope.chatLog += '<b>'+username + ':</b> ' + data + '<br>'
@@ -195,6 +208,10 @@ function ChatCtrl($scope, $timeout, chatSocket) {
   // listener, whenever the server emits 'updateusers', this updates the username list
   chatSocket.on('updateusers', function(data) {
     $scope.onlineUsers = data;
+  });
+
+  chatSocket.on('notify', function (data) {
+    $scope.createNotification(data);
   });
 
   $scope.sendChat = function(){

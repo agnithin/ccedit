@@ -1,0 +1,33 @@
+database structure
+
+users{
+	_id,
+	userId,
+	provider,
+	displayName,
+	email,
+	projects : [{
+		projectId,
+		projectName
+	}]
+}
+
+projects{
+	_id,
+	name,
+	users : {
+		userId,
+		permissions
+	}
+	files: {
+		fileId,
+		fileName
+	}
+}
+
+files{
+	_id,
+	name,
+	contents
+}
+
