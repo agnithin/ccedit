@@ -31,3 +31,38 @@ files{
 	contents
 }
 
+===========================
+users{
+	_id,
+	displayName,
+	email,
+	auth:[{		
+		provider,
+		id,
+		displayName
+	}]
+	projects : [{
+		projectId,
+		projectName
+	}]
+}
+
+projects{
+	_id,
+	name,
+	users : {
+		userId,
+		permissions
+	}
+	files: {
+		fileId,
+		fileName
+	}
+}
+
+files{
+	_id,
+	name,
+	contents
+}
+
