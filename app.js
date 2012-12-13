@@ -15,12 +15,12 @@ var environment = require('./environment.js')
   , service = require('./service.js');
 service.init(environment);
 
-require('./auth.js')(passport, TwitterStrategy);
-
 var models = {};
 models.User = service.useModel('user');
 models.Project = service.useModel('project');
 models.File = service.useModel('file');
+
+require('./auth.js')(passport, TwitterStrategy, models);
 
 var app = express();
 require('./configuration')(app, express, path, passport);

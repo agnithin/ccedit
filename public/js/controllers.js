@@ -9,16 +9,6 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   $scope.newFileName;
   $scope.showAddNewFileTextbox = false;
 
-  $scope.modal = {'header':'asdf', 
-                  'body':'asdf', 
-                  'buttons':[{'display':'df',
-                              'action':function(){
-                                console.log("lets see if this works");
-                              }
-                            }]
-                  };
-  $scope.showModal = false;
-
   $scope.openFile = function(fileId){
     $rootScope.$broadcast('openFile', fileId);
   }
@@ -46,8 +36,7 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
 
   fileSocket.on('connect', function(){
     fileSocket.emit('getProject', projectId);
-  });
-  
+  });  
 
   fileSocket.on('getProject', function (newProject) {
     $scope.project = newProject;
@@ -62,6 +51,60 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
         message: { 'text': notification.text },
         type: notification.type
       }).show();
+  }
+
+  /** ADD Collaborator DIALOG **/
+  $scope.findUserString = '';
+  $scope.searchedUsers = new Array();
+  $scope.selectedUsers = new Array();
+
+  $scope.findUser = function(){
+    if($scope.findUserString.length<3){
+      bootbox.alert("Enter minmum of 3 characters");
+    }else{
+      fileSocket.emit('findUserByName', $scope.findUserString);
+    }
+  }
+
+  fileSocket.on('findUser', function(data){
+    $scope.searchedUsers = data.users;
+  });
+
+  $scope.addToSelectedUsers = function(user){
+    if(getUserIndex($scope.selectedUsers, user) == -1){
+      $scope.selectedUsers.push(user);
+    }
+    console.log("selected:" + user.displayName);
+  }
+
+  $scope.removeFromSelectedUsers = function(user){
+    var userIndex = getUserIndex($scope.selectedUsers, user);
+    if(userIndex!=-1){
+      $scope.selectedUsers.splice(userIndex,1);
+    }
+  }
+
+  $scope.isUserSelected = function(user){
+    return getUserIndex($scope.selectedUsers, user)==-1;
+  }
+
+  $scope.addSelectedUsersToProject = function(){
+    fileSocket.emit('addUsersToProject', {
+      'projectId':$scope.project._id,
+      'users': $scope.selectedUsers
+    });
+  }
+
+  //this function is required because indexOf does not work when there is new search
+  var getUserIndex = function(userArrray, user){
+    var userIndex = -1;
+    for(i=0; i<userArrray.length; i++){
+      if(userArrray[i]._id == user._id){
+        userIndex = i;
+        break;
+      }
+    }
+    return userIndex;
   }
 }
 

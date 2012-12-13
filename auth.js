@@ -1,6 +1,6 @@
 /* Authentication stuff using Passport.js */
 
-module.exports = function(passport, TwitterStrategy){
+module.exports = function(passport, TwitterStrategy, models){
 
   var TWITTER_CONSUMER_KEY = "q3FrfHhPosxQ05jCDYOdfA";
   var TWITTER_CONSUMER_SECRET = "4aiKO3a4sSQeElwzpCMlaHGRgtq7Wjb9Gxyw6N9o9w";
@@ -13,6 +13,22 @@ module.exports = function(passport, TwitterStrategy){
   //   have a database of user records, the complete Twitter profile is serialized
   //   and deserialized.
   passport.serializeUser(function(user, done) {
+    console.log("==================================\n %j", user);
+    models.User.findOne({'provider':user.provider, 'userId':user.username}, function(err, dbUser){
+      if(dbUser==null){
+        /*var newUser = new models.User();
+        newUser.displayName = user.displayName;
+        newuser.auth.push({
+          'provider':user.provider,
+          'id':user.id,
+          'displayName':user.displayName
+        });
+        newUser.save();*/
+        console.log("##############################\nnew user!")
+      }else{
+        console.log("##############################\nfound user:" + dbUser.displayName)
+      }
+    })
     done(null, user);
   });
 

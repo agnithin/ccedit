@@ -26,23 +26,50 @@ module.exports = function (app, models, mongoose) {
 	app.get('/project/create/:projectName', ensureAuthenticated, function(req, res){	  
 		
 		models.User.findOne({"userId": req.user.username}, function(err, user){
-			  	if (user != null) {
-			  		var newProject = new models.Project();
-			  		var permissions = 'rw';
-	    			newProject.name = req.params.projectName;
-	    			newProject.users.push({'userId': user._id, 'permissions': permissions});
-	    			newProject.save();
-	    			user.projects.push(	{
-										"projectId" : newProject._id,
-										"projectName" : req.params.projectName,
-										"permissions" : permissions
-									});
-	    			user.save();
-	    			res.redirect('/project/'+newProject._id)
-				}else{
-					console.log('Cannot Find the User');
-				}
-		  	});
+		  	if (user != null) {
+		  		var newProject = new models.Project();
+		  		var permissions = 'rw';
+    			newProject.name = req.params.projectName;
+    			newProject.users.push({'userId': user._id, 'permissions': permissions});
+    			newProject.save();
+    			user.projects.push(	{
+									"projectId" : newProject._id,
+									"projectName" : req.params.projectName,
+									"permissions" : permissions
+								});
+    			user.save();
+    			res.redirect('/project/'+newProject._id);
+			}else{
+				console.log('Cannot Find the User');
+			}
+	  	});
+
+	});
+
+	app.get('/project/:id/delete', ensureAuthenticated, function(req, res){	  
+		
+		/*models.Project.findById(req.params.id, function(err, project){
+		  	if (project != null) {
+		  		if(project.users.length>1){
+		  			var userIndex = getUserIndex(project.users,null);
+		  			console.log("user removed from proj");
+		  		}else{
+			  		project.remove(function (err){
+			  			if(err){
+			  				console.log("project could not be deleted");
+			  			}else{
+			  				console.log("project deleted");
+			  				res.redirect('/');
+			  			}
+			  		});
+			  	}
+
+			}else{
+				console.log("======================================\n" + req.session);
+		  		
+				console.log('Cannot Find the Project: ' + req.params.id);
+			}
+		});*/
 
 	});
 
@@ -59,4 +86,15 @@ module.exports = function (app, models, mongoose) {
 	  if (req.isAuthenticated()) { return next(); }
 	  res.redirect('/login')
 	}
+
+	var getUserIndex = function(userArrray, user){
+		  var userIndex = -1;
+		  for(i=0; i<userArrray.length; i++){
+		    if(userArrray[i]._id == user._id){
+		      userIndex = i;
+		      break;
+		    }
+		  }
+		  return userIndex;
+		};
 }

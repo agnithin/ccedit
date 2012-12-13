@@ -43,7 +43,12 @@
                 <ul class="nav">
                   <li class="active"><a href="#">Home</a></li>
                   <li><a href="#download">Download as Zip</a></li>
-                  <li><a href="#add">Add Collaborators</a></li>
+                  <li><a href="#addCollabModal" data-toggle="modal">Add Collaborators</a></li>
+                  <li>
+                    <form class="navbar-search pull-left">
+                      <input type="text" class="search-query" placeholder="Search Project Files">
+                    </form>
+                  </li>
                 </ul>            
                 <ul class="nav pull-right">
                   <li class="dropdown ">
@@ -69,16 +74,16 @@
             <div class="span2">
               <div class="well sidebar-nav">
                 <ul id="project-files" class="nav nav-list">
-                  <li class="nav-header">Files <button class="close" type="button" ng-click="showAddFile()">+</button></li>
-                  <!--<li class="active"><a href="#">Sample file</a></li>-->
+                  <li class="nav-header">Files <button class="close" type="button" ng-click="showAddFile()" rel="tooltip" title="Add a new file">+</button></li>
+                  <!--<li class="active"><a href="#">Sample file</a></li>-->                  
                   <li ng-repeat="file in project.files">
                     <a ng-click="openFile(file.fileId)" href="#">{{file.fileName}}</a>                     
-                      <button class="close" ng-click="deleteFile(file.fileId, file.fileName)"><i class="icon-trash"></i></button>
+                      <button class="close" ng-click="deleteFile(file.fileId, file.fileName)" rel="tooltip" title="Delete file"><i class="icon-trash"></i></button>
                       <!--<button class="close" ng-click=""><i class="icon-edit"></i></button>  -->                                      
                   </li>
                   <li ng-show="showAddNewFileTextbox">
                     <form id="new-file" ng-submit="addFile()">
-                      <input id="new-file" placeholder="Specify the filename" ng-model="newFileName" focus-on="showAddNewFileTextbox">                      
+                      <input id="new-file" placeholder="Specify the filename" ng-model="newFileName" focus-on="showAddNewFileTextbox" required>                      
                     </form>
                     <button class="close" ng-click="showAddNewFileTextbox=false"><i class="icon-remove"></i></button>
                   </li>
@@ -127,20 +132,59 @@
                     <b>{{log.username}}:</b> {{log.data}}
                   </li>
                 </ul>
-                <textarea id="chat-text" rows="4" ng-model='chatText'></textarea>
-                <input type="button" value="Send" id="send-button" ng-click='sendChat()'>               
+                <textarea id="chat-text" rows="4" ng-model='chatText' ui-keypress="{13:'sendChat()'}"></textarea>
+                <!-- <input type="button" value="Send" id="send-button" ng-click='sendChat()'> -->              
               </div><!-- /CHAT BAR -->
 
             </div><!--/CHAT AREA--> 
 
           </div><!--/row--> 
-          <div class='notifications bottom-left'></div>
+          <div class='notifications bottom-left'></div> <!-- bootstrap-notify -->
+          
+          <!-- ### ADD COLLOBORATOR DIALOG ### --> 
+          <div id="addCollabModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              <h3 id="myModalLabel">Add Collaborators</h3>
+            </div>
+            <div class="modal-body">
+              <form id="find-user" ng-submit="findUser()">
+                <input placeholder="Enter the username" ng-model="findUserString">
+                <button class="btn" type="submit">Search</button>
+              </form>  
+                <table class="table table-hover">
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                  </tr>
+                  <tr ng-repeat="user in searchedUsers" ng-click="addToSelectedUsers(user)" ng-show="isUserSelected(user)">
+                    <td>{{user.displayName}}</td>
+                    <td>{{user.email}}</td>
+                  </tr>
+                </table>
+                <hr>
+                Selected Users: <span class="pager" ng-repeat="user in selectedUsers">
+                  <a href="#" ng-click="removeFromSelectedUsers(user)" rel="tooltip" title="Remove user">{{user.displayName}}</a>
+                </span>
+              
+            </div>
+            <div class="modal-footer">
+              <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+              <button class="btn btn-primary" ng-class="{disabled: selectedUsers.length<1}" ng-click="addSelectedUsersToProject()">Add Selected Users</button>
+            </div>
+          </div> <!-- /ADD COLLOBORATOR DIALOG --> 
+
+          </div> <!-- /PAGE BODY -->
+
+
           <hr>
           <footer>
-              <p>&copy; Nithin Anand Gangadharan 2012</p>
+              <div class="container">
+                <p class="muted credit">Created by <a href="http://www.nithinag.com">Nithin Anand Gangadharan</a>.</p>
+              </div>
           </footer>      
 
-        </div> <!-- /PAGE BODY -->
+        
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="../js/vendor/jquery-1.8.0.min.js"><\/script>')</script>
@@ -192,11 +236,9 @@
           function diff_launch(text1, text2) {
 
             var diff = dmp.diff_main(text1, text2, true);
-
             if (diff.length > 2) {
               dmp.diff_cleanupSemantic(diff);
             }
-
             var patch_list = dmp.patch_make(text1, text2, diff);
             //patch_text = dmp.patch_toText(patch_list);
 
@@ -209,7 +251,7 @@
             //var results = dmp.patch_apply(patches, text1);
             
             var results = dmp.patch_apply(patch_list, text1);
-            var ret =  results[0];
+            return  results[0];
             
             /*results = results[1];
             var html = '';
@@ -221,8 +263,6 @@
               }
             }
             console.log("Status:" + html);*/
-
-            return ret;
           }
         </script>
 
