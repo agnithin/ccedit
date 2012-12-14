@@ -26,8 +26,8 @@ var app = express();
 require('./configuration')(app, express, path, passport);
 
 // include routes
-require('./routes/index')(app, models, mongoose)
-require('./routes/auth')(app, passport)
+require('./routes/index')(app, models)
+require('./routes/auth')(app, passport, models)
 
 var server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

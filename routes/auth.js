@@ -1,5 +1,5 @@
 
-module.exports = function (app, passport) {
+module.exports = function (app, passport, models) {
 
 /* --- passport --- */
   // GET /auth/twitter
@@ -30,21 +30,21 @@ module.exports = function (app, passport) {
     res.redirect('/');
   });
 
-
   /** IMPORTANT! - REMOVE THIS CODE **/
   app.get('/auth/backdoor/:id', function(req, res){
-    user={'username':req.params.id, 'displayName': req.params.id}
-    /*req.user.username = ;
-    req.user.displayName = req.params.id;*/
-    //console.log(req.user);
-    req.login(user, function(err) {
-      if (err) {
-        console.log(err);
-      }
+    models.User.findOne({provider:'twitter', providerUsername: req.params.id},
+      function(err, user){
+        if(!err && user != null){
+          console.log("BACKDOOR: Found User in routes/auth:%j",user);
+          req.login(user, function(err) {
+            if (err) {
+              console.log(err);
+            }
+          });
+          res.redirect('/');
+        }else{
+          console.log("BACKDOOR: Error finding user in routes/auth.js");          
+        }
     });
-
-    res.redirect('/');
   });
-
-
 }

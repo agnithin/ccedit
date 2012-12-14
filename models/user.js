@@ -7,31 +7,23 @@ module.exports = function(mongoose) {
   var ObjectId = Schema.ObjectId;
 
   var UserSchema = new Schema({
-      userId : {type: String, required: true}
-    , provider : {type: String, required: true} 
-    , displayName : {type: String, required: true }
-    , email: { type: String, unique: true }
-    , projects:{ type: [{projectId: ObjectId, projectName: String, permissions: String }] }
+    displayName : {type: String, required: true },
+    provider : {type: String, required: true},
+    providerId : {type: String, required: true},
+    providerUsername : String,
+    profilePicture : String,
+    email: String,
+    lastConnected : Date,
+    projects:{ 
+      type : [{
+        projectId : ObjectId, 
+        projectName : String,
+        description : String,
+        permissions: String,
+        _id : false 
+      }] 
+    }
   });
 
-  var userModel = mongoose.model('User', UserSchema);
-     
-  /*var user = new userModel();
-     
-    user.userId = 'ag_nithin';
-    user.provider = 'twitter';
-    user.displayName = 'AG Nithin';
-    user.email= "agnithin@yahoo.com";
-
-    user.save(function(err) {
-      if (err) throw err;
-      console.log('User saved, starting server...');
-    }); */
-
-    return userModel;
-  //return mongoose.model('User', UserSchema);
+  return mongoose.model('User', UserSchema);
 }
-
-/*
-db.users.save({"userId":"agnithin", "provider":"twitter", "displayName":"Nithin Anand Gangadharan", "email":"agnithin@gmail.com", "projects":[{"projectId":1, "projectName":"Test 1", "permissions":"rw"}]});
-*/

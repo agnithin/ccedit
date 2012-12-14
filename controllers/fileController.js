@@ -62,14 +62,21 @@ module.exports = function(io, models, diff_match_patch){
 	  socket.on('createFile', function (data) {
 	    console.log("create File:" + data.projectId + " : " +data.fileName);   
 
-	    var newFile = new models.File();
+	    /*var newFile = new models.File();
 	    newFile.name = data.fileName;
-	    newFile.contents = '';	    
+	    newFile.contents = '';*/
+	    var newFile = new models.File({
+	    	'name' : data.fileName,
+	    	'contents' : "",
+	    	'createdOn' : Date.now(),
+	    	'ModifiedOn' : Date.now()
+	    	});  
 
 	    models.Project.findById(data.projectId, function(err, project){
-		  	if (project != null) {
+		  	if (!err && project != null) {
 		  		newFile.save(function(err){
 		  			if(err){
+		  				console.log("error saging file : " + err);
 		  				socket.emit('notify', {type:'danger', text:'Oops! Something went wrong! Could not create file.'});
 		  			}else{
 		  				project.files.push({'fileId':newFile._id, 'fileName':newFile.name});
@@ -182,14 +189,14 @@ module.exports = function(io, models, diff_match_patch){
 	  });
 
 
-
+	  	/* IMPORTANT REMOVE USERS STILL DOES NOT WORK */
 		socket.on('addUsersToProject', function (data) {
-		  	console.log("Adding users to project:" + data.projectId);   
+		  	console.log("Adding users to project: %j", data);   
 
-		  	/*models.Project.findById(data.projectId, function(err, project){
+		  	models.Project.findById(data.projectId, function(err, project){
 		  	  	if (project != null) {
-		  	  		for(i=0;i<data.users.length;i++){
-		  	  			if(getUserIndex(project.users, data.users[i] ==-1)){
+		  	  		/*for(i=0;i<data.users.length;i++){
+		  	  			if(getElementIndex(project.users, data.users[i] ==-1)){
 			  	  			project.users.push({
 			  	  				'_id':data.users[i]._id,
 			  	  				'permissions':'rw'
@@ -198,26 +205,43 @@ module.exports = function(io, models, diff_match_patch){
 			  	  			data.users.splice(i,1); // remove already active users so that redunant projects are not added to user below
 			  	  			i--; // since altering the array
 			  	  		}
-			  	  	}
+			  	  	}*/
+			  	  	project.users = data.users;
 			  	  	project.save(function(err){
 			  	  		if(err){
 			  	  			socket.emit('notify', {type:'danger', text:'Oops! Something went wrong. Could not add users to project.'});
 			  	  		}else{
 			  	  			var usersArray = new Array();
 			  	  			for(i=0;i<data.users.length;i++){
-			  	  				usersArray.push(data.users[i]._id)
+			  	  				usersArray.push(data.users[i].userId)
 			  	  			}
+			  	  			console.log("## usersArray:%j",usersArray);
 
 			  	  			models.User.find({'_id':{$in:usersArray}}, function(err, users){
-			  	  				for(i=0;i<users.length;i++){
-			  	  					users[i].projects.push({
-			  	  						'projectId':project._id,
-			  	  						'projectName':project.name,
-			  	  						'permissions':project.permissions
-			  	  					});
-			  	  					users[i].save();
-			  	  				}
+			  	  				console.log("## users:%j",users)
+			  	  				if(!err && users!=null){
+			  	  				users.forEach(function(usr){
+			  	  					console.log("========usr:"+usr.displayName +':' + getElementIndex(usr.projects, project._id));
+			  	  					console.log("========projectId:"+project._id+"###:%j", usr.projects);
+			  	  					if(getElementIndex(usr.projects, project._id) == -1){
+				  	  					usr.projects.push({
+				  	  						'projectId':project._id,
+				  	  						'projectName':project.name,
+				  	  						'permissions':project.permissions
+				  	  					});
+				  	  					usr.save(function(err){
+							  				if(err){
+							  					console.log("Error while adding project to user");
+							  				}else{
+							  					socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
+							  					//file.in(socket.room).emit('getProject',  project);
+						  					}
+						  				});
+				  	  				}
+			  	  				});
+			  	  			}
 			  	  			});
+			  	  			file.in(socket.room).emit('getProject',  project);
 			  	  		}
 			  	  	});
 
@@ -225,19 +249,19 @@ module.exports = function(io, models, diff_match_patch){
 		  			socket.emit('notify', {type:'danger', text:'Oops! Could not locate the project.'});
 		  			console.log('Cannot Find the Project: ' + projectId);
 		  		}
-		  	});*/
+		  	});
 		});
 
-		var getUserIndex = function(userArrray, user){
-		  var userIndex = -1;
-		  for(i=0; i<userArrray.length; i++){
-		    if(userArrray[i]._id == user._id){
-		      userIndex = i;
+		var getElementIndex = function(objectArray, elementId){
+		  var elementIndex = -1;
+		  for(i=0; i<objectArray.length; i++){
+		    if(objectArray[i].projectId.equals(elementId)){
+		      elementIndex = i;
 		      break;
 		    }
 		  }
-		  return userIndex;
-		}
+		  return elementIndex;
+		};
 
 	});
 };

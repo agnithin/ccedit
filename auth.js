@@ -9,31 +9,18 @@ module.exports = function(passport, TwitterStrategy, models){
   //   To support persistent login sessions, Passport needs to be able to
   //   serialize users into and deserialize users out of the session.  Typically,
   //   this will be as simple as storing the user ID when serializing, and finding
-  //   the user by ID when deserializing.  However, since this example does not
-  //   have a database of user records, the complete Twitter profile is serialized
-  //   and deserialized.
+  //   the user by ID when deserializing.  
   passport.serializeUser(function(user, done) {
-    console.log("==================================\n %j", user);
-    models.User.findOne({'provider':user.provider, 'userId':user.username}, function(err, dbUser){
-      if(dbUser==null){
-        /*var newUser = new models.User();
-        newUser.displayName = user.displayName;
-        newuser.auth.push({
-          'provider':user.provider,
-          'id':user.id,
-          'displayName':user.displayName
-        });
-        newUser.save();*/
-        console.log("##############################\nnew user!")
-      }else{
-        console.log("##############################\nfound user:" + dbUser.displayName)
-      }
-    })
-    done(null, user);
+    //done(null, user);
+    console.log("===================================\n%j",user);
+    done(null, user._id);
   });
 
   passport.deserializeUser(function(obj, done) {
-    done(null, obj);
+    //done(null, obj);
+    models.User.findById(obj, function(err, user) {
+       done(err, user);
+     });
   });
 
 
@@ -47,7 +34,7 @@ module.exports = function(passport, TwitterStrategy, models){
       callbackURL: "http://local.ccedit.com:3000/auth/twitter/callback"
     },
     function(token, tokenSecret, profile, done) {
-      // asynchronous verification, for effect...
+      /*// asynchronous verification, for effect...
       process.nextTick(function () {
         
         // To keep the example simple, the user's Twitter profile is returned to
@@ -55,7 +42,41 @@ module.exports = function(passport, TwitterStrategy, models){
         // to associate the Twitter account with a user record in your database,
         // and return that user instead.
         return done(null, profile);
-      });
+      });*/
+      //console.log("=====================================\n%j", profile);
+      models.User.findOne({provider:'twitter', providerId: profile.id},
+        function(err, user) {
+          if (!err && user != null) {
+            console.log("user found");
+            models.User.update({"_id": user._id}, { $set: {lastConnected: new Date()} } ).exec();
+            done(null, user);
+          } else {
+            console.log("first time user");
+            var userData = new models.User({
+              displayName: profile.displayName,
+              provider: profile.provider,
+              providerId : profile.id,
+              providerUsername: profile.username,              
+              lastConnected : Date.now(),              
+              profilePicture: 'https://api.twitter.com/1/users/profile_image?screen_name=' + profile.username +'&size=bigger'
+            });
+
+            userData.save(function(err) {
+              if (err){ 
+                console.log("##error saving:" + err);
+              }else{ 
+                console.log("Saving User..");
+              }
+            }); 
+            console.log("Sending User: %j",userData);
+            done(null, userData);           
+          }
+          
+
+        }
+      );
+      //var user = { id: profile.id, name: profile.username };
+      
     }
-  ));
+  ))
 };

@@ -5,7 +5,7 @@
 /** PROJECT CONTROLLER **/
 function ProjectCtrl($scope, $rootScope, fileSocket) {
   $scope.project = {'_id':projectId, 'name':'New Project'};
-  $scope.username = username;
+  $scope.currentUser = user;
   $scope.newFileName;
   $scope.showAddNewFileTextbox = false;
 
@@ -54,10 +54,26 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   }
 
   /** ADD Collaborator DIALOG **/
-  $scope.findUserString = '';
-  $scope.searchedUsers = new Array();
-  $scope.selectedUsers = new Array();
+  $scope.findUserString;// = '';
+  $scope.searchedUsers;// = new Array();
+  $scope.selectedUsers;// = new Array();
 
+  $scope.initializeCollaborators = function(){
+    
+    /*$scope.selectedUsers = new Array();
+    for(i=0;i<$scope.project.users.length;i++){
+      $scope.selectedUsers.push({
+        '_id':$scope.project.users[i].userId,
+        'displayName': $scope.project.users[i].displayName,
+        'permissions': $scope.project.users[i].permissions
+      });
+    }*/
+    $scope.selectedUsers = $scope.project.users;
+    $scope.findUserString = '';
+    $scope.searchedUsers = new Array();
+    console.log("proj users:",JSON.stringify($scope.project.users));
+    console.log("sel users:",JSON.stringify($scope.selectedUsers));
+  }
   $scope.findUser = function(){
     if($scope.findUserString.length<3){
       bootbox.alert("Enter minmum of 3 characters");
@@ -71,21 +87,31 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   });
 
   $scope.addToSelectedUsers = function(user){
-    if(getUserIndex($scope.selectedUsers, user) == -1){
-      $scope.selectedUsers.push(user);
+    if(getUserIndex($scope.selectedUsers, user.userId) == -1){
+      $scope.selectedUsers.push({
+        'userId':user._id,
+        'displayName': user.displayName,
+        'permissions' : 'rw'
+      });
     }
     console.log("selected:" + user.displayName);
   }
 
   $scope.removeFromSelectedUsers = function(user){
-    var userIndex = getUserIndex($scope.selectedUsers, user);
-    if(userIndex!=-1){
-      $scope.selectedUsers.splice(userIndex,1);
+    console.log("sel user: " + JSON.stringify(user) + "\ncur user:" + JSON.stringify($scope.currentUser) );
+    if(user.userId == $scope.currentUser._id){
+       bootbox.alert("You cannot remove your self from the project!");
+    }else{
+      var userIndex = getUserIndex($scope.selectedUsers, user.userId);
+      if(userIndex!=-1){
+        $scope.selectedUsers.splice(userIndex,1);
+      }
     }
   }
 
   $scope.isUserSelected = function(user){
-    return getUserIndex($scope.selectedUsers, user)==-1;
+    console.log("isus:" + JSON.stringify($scope.selectedUsers) + " #"+ JSON.stringify(user));
+    return getUserIndex($scope.selectedUsers, user._id) == -1;
   }
 
   $scope.addSelectedUsersToProject = function(){
@@ -96,10 +122,10 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   }
 
   //this function is required because indexOf does not work when there is new search
-  var getUserIndex = function(userArrray, user){
+  var getUserIndex = function(userArrray, userId){
     var userIndex = -1;
     for(i=0; i<userArrray.length; i++){
-      if(userArrray[i]._id == user._id){
+      if(userArrray[i].userId == userId){
         userIndex = i;
         break;
       }
@@ -118,6 +144,7 @@ function FileCtrl($scope, fileSocket) {
   $scope.activeFileContentsBeforeChange = '';
 
   $scope.openFile = function(fileId){
+    console.log("getting file" + fileId);
     if(getOpenFileIndex(fileId) == -1){ // if file not open then request file
       fileSocket.emit('getFile', fileId);
     }else{// if file already among open files then activate tab
@@ -230,7 +257,7 @@ function ChatCtrl($scope, $timeout, chatSocket) {
   // on connection to server, ask for user's name with an anonymous callback
   chatSocket.on('connect', function(){
     // call the server-side function 'adduser' and send one parameter (value of prompt)
-    chatSocket.emit('adduser', {'projectId':$scope.project._id, 'username':$scope.username});
+    chatSocket.emit('adduser', {'projectId':$scope.project._id, 'username':$scope.currentUser.displayName});
   });
 
   // listener, whenever the server emits 'updatechat', this updates the chat body

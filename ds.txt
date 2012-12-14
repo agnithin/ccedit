@@ -36,33 +36,40 @@ users{
 	_id,
 	displayName,
 	email,
-	auth:[{		
-		provider,
-		id,
-		displayName
-	}]
+	provider,
+	providerId,
+	providerUsername,
 	projects : [{
 		projectId,
-		projectName
+		name,
+		description
 	}]
 }
 
 projects{
 	_id,
 	name,
+	description,
+	author,
+	createdOn,
 	users : {
 		userId,
+		displayName,
 		permissions
 	}
 	files: {
 		fileId,
-		fileName
+		name
 	}
 }
 
 files{
 	_id,
 	name,
-	contents
+	contents,
+	createdBy,
+	createdOn,
+	lastModifiedBy,
+	lastModifiedOn
 }
 

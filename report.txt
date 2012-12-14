@@ -47,6 +47,14 @@ https://github.com/frodsan/emberjs-getting-started
 http://www.adobe.com/devnet/html5/articles/flame-on-a-beginners-guide-to-emberjs.html
 
 
+passport local========
+https://github.com/saintedlama/passport-local-mongoose
+
+socketio auth
+http://stackoverflow.com/questions/13095418/how-to-use-passport-with-express-and-socket-io
+
+passport good guide
+http://css.dzone.com/articles/oauth-authentication
 
 dan suggestions:
 file history: list of recently edited files

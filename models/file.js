@@ -7,22 +7,15 @@ module.exports = function(mongoose) {
   var Schema = mongoose.Schema;
   var ObjectId = Schema.ObjectId;
 
-  // Define schema
+  // Define File schema
   var FileSchema = new Schema({
-      name : {type: String, required: true} 
-    , contents : String
-    , timeCreated: Date
-    , timeModified: Date
+    name : {type: String, required: true},
+    contents : String,
+    createdOn : Date,
+    createdBy : ObjectId,
+    ModifiedOn : Date,
+    ModifiedBy : ObjectId
   });
 
-  /*this.model = mongoose.model("User", UserSchema);
-  return this;*/
-
-  var fileModel = mongoose.model('File', FileSchema);
-
-  return fileModel;
+  return mongoose.model('File', FileSchema);
 }
-
-/*
-db.files.save({'name':"test.html", 'contents':"<h1>hello</h1> adfasdfasdfasdf"});
-*/
