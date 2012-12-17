@@ -21,35 +21,3 @@ angular.module('myApp.directives', [])
     });
   };
 });
-
-/*angular.module('myApp.directives', [])
-.directive('contextMenu', function( $parse ) {
-  return {
-    scope:{
-      file:"=file"
-    },
-    templateUrl:'/partials/fileContextMenu.html'
-    
-
-  }
-});*/
-
-
-/*
-
-link: function(scope, element, attr) {
-      console.log("inside contextm:",scope,element,attr);
-      scope.$watch(attr.contextMenu, function(cm){
-        element.text("this is:" + cm);
-      });
-      //element.contextmenu();
-    }
-
-  {
-    template: '<div>Data: {{data}}</div>',
-    replace: true,
-    scope: {
-      model: '=contextMenu'
-    }
-  }
-  */

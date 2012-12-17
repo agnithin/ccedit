@@ -2,14 +2,17 @@
   "author": "agnithin",
   "name": "cc-edit",
   "description": "Colloborative code editor in Node.js",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "private": true,
   "scripts": {
     "start": "node app"
   },
   "dependencies": {
-    "express": "3.0.0rc4",
+    "express": "3.0.0",
     "ejs": "*",
+    "mongodb" :"1.2.x",
+    "mongoose" : "3.5.x",
+    "socket.io" : "o.9.x",
     "passport": "0.1.x",
     "passport-twitter": "0.1.x"
   }

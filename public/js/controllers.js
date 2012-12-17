@@ -3,9 +3,9 @@
 **************************/
 
 /** PROJECT CONTROLLER **/
-function ProjectCtrl($scope, $rootScope, fileSocket) {
-  $scope.project = {'_id':projectId, 'name':'New Project'};
-  $scope.currentUser = user;
+function ProjectCtrl($scope, $rootScope, $location, fileSocket) {
+  $rootScope.project = {'_id':projectId, 'name':'New Project'};
+  $rootScope.currentUser = user;
   $scope.newFileName;
   $scope.showAddNewFileTextbox = false;
 
@@ -14,7 +14,7 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   }
 
   $scope.addFile = function(){
-   fileSocket.emit('createFile', {'projectId':$scope.project._id, 'fileName':$scope.newFileName});
+   fileSocket.emit('createFile', {'projectId':$rootScope.project._id, 'fileName':$scope.newFileName});
    $scope.newFileName = '';
    $scope.showAddNewFileTextbox = false;
   };
@@ -28,7 +28,7 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
     bootbox.confirm("Are you sure you want to delete "+fileName+"?", function(confirmed) {
                     if(confirmed){
                       $rootScope.$broadcast('closeFile', fileId);
-                      fileSocket.emit('deleteFile', {'projectId':$scope.project._id, 'fileId':fileId});
+                      fileSocket.emit('deleteFile', {'projectId':$rootScope.project._id, 'fileId':fileId});
                     }
                 });         
   };
@@ -39,7 +39,7 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   });  
 
   fileSocket.on('getProject', function (newProject) {
-    $scope.project = newProject;
+    $rootScope.project = newProject;
   });
 
   fileSocket.on('notify', function (data) {
@@ -59,20 +59,18 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   $scope.selectedUsers;// = new Array();
 
   $scope.initializeCollaborators = function(){
-    
+    collaboration.initializeCollaborators();
     /*$scope.selectedUsers = new Array();
-    for(i=0;i<$scope.project.users.length;i++){
+    for(i=0;i<$rootScope.project.users.length;i++){
       $scope.selectedUsers.push({
-        '_id':$scope.project.users[i].userId,
-        'displayName': $scope.project.users[i].displayName,
-        'permissions': $scope.project.users[i].permissions
+        '_id':$rootScope.project.users[i].userId,
+        'displayName': $rootScope.project.users[i].displayName,
+        'permissions': $rootScope.project.users[i].permissions
       });
     }*/
-    $scope.selectedUsers = $scope.project.users;
+    $scope.selectedUsers = $rootScope.project.users;
     $scope.findUserString = '';
     $scope.searchedUsers = new Array();
-    console.log("proj users:",JSON.stringify($scope.project.users));
-    console.log("sel users:",JSON.stringify($scope.selectedUsers));
   }
   $scope.findUser = function(){
     if($scope.findUserString.length<3){
@@ -94,12 +92,10 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
         'permissions' : 'rw'
       });
     }
-    console.log("selected:" + user.displayName);
   }
 
   $scope.removeFromSelectedUsers = function(user){
-    console.log("sel user: " + JSON.stringify(user) + "\ncur user:" + JSON.stringify($scope.currentUser) );
-    if(user.userId == $scope.currentUser._id){
+    if(user.userId == $rootScope.currentUser._id){
        bootbox.alert("You cannot remove your self from the project!");
     }else{
       var userIndex = getUserIndex($scope.selectedUsers, user.userId);
@@ -110,13 +106,12 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
   }
 
   $scope.isUserSelected = function(user){
-    console.log("isus:" + JSON.stringify($scope.selectedUsers) + " #"+ JSON.stringify(user));
     return getUserIndex($scope.selectedUsers, user._id) == -1;
   }
 
   $scope.addSelectedUsersToProject = function(){
     fileSocket.emit('addUsersToProject', {
-      'projectId':$scope.project._id,
+      'projectId':$rootScope.project._id,
       'users': $scope.selectedUsers
     });
   }
@@ -136,7 +131,7 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
 
 
 /** FILE CONTROLLER **/
-function FileCtrl($scope, fileSocket) {
+function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
   $scope.openFiles = [];
 
   var emptyFile = {'_id':'', 'name':'','contents':''};
@@ -207,7 +202,7 @@ function FileCtrl($scope, fileSocket) {
 
   $scope.sendUpdatedFile = function(){
     if($scope.activeFile._id != ''){
-      var diff = diff_launch($scope.activeFileContentsBeforeChange, $scope.activeFile.contents);
+      var diff = diffMatchPatch.diff_launch($scope.activeFileContentsBeforeChange, $scope.activeFile.contents);
       /*console.log("=======Unpatched Text\n" + $scope.activeFileContentsBeforeChange);
       console.log("=======Patch\n" + diff);
       console.log("=======patched text\n" + patch_launch($scope.activeFileContentsBeforeChange, diff));*/
@@ -231,7 +226,7 @@ function FileCtrl($scope, fileSocket) {
     if(fileIndex != -1){
       /*console.log("=======Unpatched Text\n" + $scope.activeFile.contents);
       console.log("Patch =======\n" + fileUpdate.diff);*/
-      var patchedText = patch_launch($scope.activeFile.contents, fileUpdate.patch);
+      var patchedText = diffMatchPatch.patch_launch($scope.activeFile.contents, fileUpdate.patch);
       //console.log("Patched Text =======\n" + patchedText);
       $scope.openFiles[fileIndex].contents = patchedText;
       //$scope.openFiles[fileIndex] = fileUpdate;
@@ -278,7 +273,7 @@ function FileCtrl($scope, fileSocket) {
 
 
 /** CHAT CONTROLLER **/
-function ChatCtrl($scope, $timeout, chatSocket) {
+function ChatCtrl($scope, $timeout, $rootScope, chatSocket) {
   
   $scope.chatLog = new Array();
   $scope.chatNotifications = [];
@@ -288,21 +283,16 @@ function ChatCtrl($scope, $timeout, chatSocket) {
   // on connection to server, ask for user's name with an anonymous callback
   chatSocket.on('connect', function(){
     // call the server-side function 'adduser' and send one parameter (value of prompt)
-    chatSocket.emit('adduser', {'projectId':$scope.project._id, 'username':$scope.currentUser.displayName});
+    chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
   });
 
   // listener, whenever the server emits 'updatechat', this updates the chat body
   chatSocket.on('updatechat', function (username, data) {
     if(username == 'SERVER'){
-      /*$scope.chatNotifications.push(data);
-      $timeout(function(){
-          $scope.chatNotifications.shift();
-        }, 3000);*/
       $scope.createNotification({type:'info', text:data});      
 
     }else{
       $scope.chatLog.push({'username': username, 'data' : data});
-      //$scope.chatLog += '<b>'+username + ':</b> ' + data + '<br>'
     }
   }); 
 
