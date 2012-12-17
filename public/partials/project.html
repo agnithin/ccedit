@@ -1,3 +1,4 @@
+        <div ng-controller="ProjectCtrl">
         <!-- ### PAGE HEADER ### -->
         <div class="navbar navbar-inverse navbar-fixed-top">
           <div class="navbar-inner">
@@ -7,7 +8,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
               </a>
-              <a class="brand" href="/">CC-Edit</a>
+              <a class="brand" href="#">CC-Edit</a>
               <div class="nav-collapse collapse">
                 <ul class="nav">
                   <li class="active"><a href="#">Home</a></li>
@@ -46,7 +47,7 @@
                   <li class="nav-header">Files <button class="close" type="button" ng-click="showAddFile()" rel="tooltip" title="Add a new file">+</button></li>
                   <!--<li class="active"><a href="#">Sample file</a></li>-->                  
                   <li ng-repeat="file in project.files">
-                    <a ng-click="openFile(file.fileId)" href="#">{{file.fileName}}</a>              
+                    <a ng-click="openFile(file.fileId)" >{{file.fileName}}</a>              
                     <button class="close" ng-click="deleteFile(file.fileId, file.fileName)" rel="tooltip" title="Delete file"><i class="icon-trash"></i></button>                                      
                   </li>
 
@@ -77,9 +78,9 @@
                         <span class="caret"></span>
                       </span>
                       <ul class="dropdown-menu">
-                        <li><a href="#" ng-click="closeFile(file._id)">Close</a></li>
+                        <li><a href="" ng-click="closeFile(file._id)">Close</a></li>
                         <li class="divider"></li>
-                        <li><a href="#" ng-click="backupFile(file._id)">Backup</a></li>
+                        <li><a href="" ng-click="backupFile(file._id)">Backup</a></li>
                         <li><a href="#listBackups" data-toggle="modal" ng-click="initializeBackupList(file._id)">Restore</a></li>
                       </ul>
                     </span>                                   
@@ -178,7 +179,7 @@
                 </table>
                 <hr>
                 Selected Users: <span class="pager" ng-repeat="user in selectedUsers">
-                  <a href="#" ng-click="removeFromSelectedUsers(user)" rel="tooltip" title="Remove user">{{user.displayName}}</a>
+                  <a href="" ng-click="removeFromSelectedUsers(user)" rel="tooltip" title="Remove user">{{user.displayName}}</a>
                 </span>              
             </div>
             <div class="modal-footer">
@@ -188,10 +189,4 @@
           </div> <!-- /ADD COLLOBORATOR DIALOG -->            
 
           </div> <!-- /PAGE BODY -->
-
-          <hr>
-          <footer>
-              <div class="container">
-                <p class="muted credit">Created by <a href="http://www.nithinag.com">Nithin Anand Gangadharan</a>.</p>
-              </div>
-          </footer> 
+        </div>

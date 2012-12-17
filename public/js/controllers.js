@@ -1,11 +1,20 @@
 /**************************
 * Controllers
 **************************/
+/** PROJECT CONTROLLER **/
+function MainCtrl($scope, $rootScope, $routeParams) {
+  $rootScope.currentUser = user;
+}
+
+
+
+
+
 
 /** PROJECT CONTROLLER **/
-function ProjectCtrl($scope, $rootScope, $location, fileSocket) {
-  $rootScope.project = {'_id':projectId, 'name':'New Project'};
-  $rootScope.currentUser = user;
+function ProjectCtrl($scope, $rootScope, $routeParams, fileSocket) {
+  $rootScope.project = {'_id':$routeParams.projectId, 'name':'New Project'};
+  
   $scope.newFileName;
   $scope.showAddNewFileTextbox = false;
 
@@ -35,7 +44,8 @@ function ProjectCtrl($scope, $rootScope, $location, fileSocket) {
   /* TODO delete file push activity required to close file in other window */
 
   fileSocket.on('connect', function(){
-    fileSocket.emit('getProject', projectId);
+    console.log("filesocket connected");
+    fileSocket.emit('getProject', $rootScope.project._id);
   });  
 
   fileSocket.on('getProject', function (newProject) {
@@ -43,10 +53,12 @@ function ProjectCtrl($scope, $rootScope, $location, fileSocket) {
   });
 
   fileSocket.on('notify', function (data) {
+    console.log("recieved notification" + JSON.stringify(data));
     $scope.createNotification(data);
   });
 
   $scope.createNotification = function (notification){
+    console.log("showing notification" + JSON.stringify(notification));
     $('.notifications').notify({
         message: { 'text': notification.text },
         type: notification.type
@@ -59,7 +71,6 @@ function ProjectCtrl($scope, $rootScope, $location, fileSocket) {
   $scope.selectedUsers;// = new Array();
 
   $scope.initializeCollaborators = function(){
-    collaboration.initializeCollaborators();
     /*$scope.selectedUsers = new Array();
     for(i=0;i<$rootScope.project.users.length;i++){
       $scope.selectedUsers.push({
@@ -139,7 +150,6 @@ function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
   $scope.activeFileContentsBeforeChange = '';
 
   $scope.openFile = function(fileId){
-    console.log("getting file" + fileId);
     if(getOpenFileIndex(fileId) == -1){ // if file not open then request file
       fileSocket.emit('getFile', fileId);
     }else{// if file already among open files then activate tab
@@ -158,38 +168,6 @@ function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
         }
      }
   }
-
-  /** FILE BACKUP STUFF **/
-  $scope.backupList = new Array();
-  $scope.selectedBackup == '';
-
-  $scope.backupFile = function(fileId){
-    /* This should be removed */
-    $('[data-toggle="dropdown"]').parent().removeClass('open');
-    fileSocket.emit('backupFile', fileId);
-  }
-
-  $scope.initializeBackupList = function(fileId){
-    $('[data-toggle="dropdown"]').parent().removeClass('open');
-    $scope.selectedBackup = '';
-    fileSocket.emit('listBackups', fileId);
-  }
-
-  fileSocket.on('listBackups', function(backupList){
-    $scope.backupList = backupList;
-  })
-
-  $scope.selectBackup = function(backup){
-    $scope.selectedBackup = backup;
-  }
-  $scope.isSelectedBackup = function(backup){
-    return ($scope.selectedBackup!= '' && $scope.selectedBackup._id == backup._id);
-  }
-  $scope.restoreBackup = function(){
-    console.log("restoring backup");
-    fileSocket.emit('restoreBackup', $scope.selectedBackup);
-  }
-
 
   $scope.changeActiveFile = function(fileId){
     if(!fileId){
@@ -269,6 +247,37 @@ function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
       }      
     }    
   });
+
+  /** FILE BACKUP STUFF **/
+  $scope.backupList = new Array();
+  $scope.selectedBackup == '';
+
+  $scope.backupFile = function(fileId){
+    /* This should be removed */
+    $('[data-toggle="dropdown"]').parent().removeClass('open');
+    fileSocket.emit('backupFile', fileId);
+  }
+
+  $scope.initializeBackupList = function(fileId){
+    $('[data-toggle="dropdown"]').parent().removeClass('open');
+    $scope.selectedBackup = '';
+    fileSocket.emit('listBackups', fileId);
+  }
+
+  fileSocket.on('listBackups', function(backupList){
+    $scope.backupList = backupList;
+  })
+
+  $scope.selectBackup = function(backup){
+    $scope.selectedBackup = backup;
+  }
+  $scope.isSelectedBackup = function(backup){
+    return ($scope.selectedBackup!= '' && $scope.selectedBackup._id == backup._id);
+  }
+  $scope.restoreBackup = function(){
+    console.log("restoring backup");
+    fileSocket.emit('restoreBackup', $scope.selectedBackup);
+  }
 }
 
 
