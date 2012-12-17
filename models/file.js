@@ -13,8 +13,13 @@ module.exports = function(mongoose) {
     contents : String,
     createdOn : Date,
     createdBy : ObjectId,
-    ModifiedOn : Date,
-    ModifiedBy : ObjectId
+    modifiedOn : Date,
+    modifiedBy : String, // change this to ObjectId
+    backup : [{
+            contents : String,
+            time : Date,
+            backedupBy : String
+          }]
   });
 
   return mongoose.model('File', FileSchema);

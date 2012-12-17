@@ -66,7 +66,6 @@ module.exports = function (app, models) {
 				console.log('Cannot Find the User');
 			}
 	  	});
-
 	});
 
 	app.get('/project/:id/delete', ensureAuthenticated, function(req, res){	  

@@ -23,11 +23,11 @@ function ProjectCtrl($scope, $rootScope, fileSocket) {
     $scope.showAddNewFileTextbox = true;    
   }
 
-  $scope.deleteFile = function(fileId, fileName){
-    $rootScope.$broadcast('closeFile', fileId);
+  $scope.deleteFile = function(fileId, fileName){    
 
     bootbox.confirm("Are you sure you want to delete "+fileName+"?", function(confirmed) {
                     if(confirmed){
+                      $rootScope.$broadcast('closeFile', fileId);
                       fileSocket.emit('deleteFile', {'projectId':$scope.project._id, 'fileId':fileId});
                     }
                 });         
@@ -161,9 +161,40 @@ function FileCtrl($scope, fileSocket) {
         }else{
           $scope.activeFile = emptyFile;
         }
-
      }
   }
+
+  /** FILE BACKUP STUFF **/
+  $scope.backupList = new Array();
+  $scope.selectedBackup == '';
+
+  $scope.backupFile = function(fileId){
+    /* This should be removed */
+    $('[data-toggle="dropdown"]').parent().removeClass('open');
+    fileSocket.emit('backupFile', fileId);
+  }
+
+  $scope.initializeBackupList = function(fileId){
+    $('[data-toggle="dropdown"]').parent().removeClass('open');
+    $scope.selectedBackup = '';
+    fileSocket.emit('listBackups', fileId);
+  }
+
+  fileSocket.on('listBackups', function(backupList){
+    $scope.backupList = backupList;
+  })
+
+  $scope.selectBackup = function(backup){
+    $scope.selectedBackup = backup;
+  }
+  $scope.isSelectedBackup = function(backup){
+    return ($scope.selectedBackup!= '' && $scope.selectedBackup._id == backup._id);
+  }
+  $scope.restoreBackup = function(){
+    console.log("restoring backup");
+    fileSocket.emit('restoreBackup', $scope.selectedBackup);
+  }
+
 
   $scope.changeActiveFile = function(fileId){
     if(!fileId){

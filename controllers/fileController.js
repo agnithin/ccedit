@@ -1,7 +1,6 @@
 
 module.exports = function(io, models, diff_match_patch){
 	
-	
 	// socket auth
 	/*parseCookie = require('connect').utils.parseCookie;
 	io.configure(function () {
@@ -23,7 +22,6 @@ module.exports = function(io, models, diff_match_patch){
 	        return accept(null, false);
 	    }
 	});*/
-
 
 	var file = io
 	.of('/file')
@@ -54,6 +52,7 @@ module.exports = function(io, models, diff_match_patch){
 		  		oldfile.contents = dmp.patch_apply(data.patch, oldfile.contents)[0];
 		  		oldfile.save();
 			}else{
+				socket.emit('notify', {type:'danger', text:'Oops! Could not update the file on server. This could be because someone else deleted this file.'});
 				console.log('Cannot Find the File: ' + data._id);
 			}
 		})
@@ -138,6 +137,116 @@ module.exports = function(io, models, diff_match_patch){
 				console.log('Cannot Find the Project: ' + projectId);
 			}
 		})
+	  });
+
+	  socket.on('backupFile', function (fileId) {
+	    console.log("Backup File:" + fileId);   
+
+	    models.File.findById(fileId, function(err, foundFile){
+		  	if (foundFile != null) {
+		  		var currentBackup = {
+			  		contents : foundFile.contents,
+			  		time : Date.now(),
+			  		backedupBy : "userid"
+			  	};
+
+			  	if(!foundFile.backup){
+			  		foundFile.backup = new Array();
+			  	}
+			  	foundFile.backup.push(currentBackup);
+
+		  		if(foundFile.backup.length>5){ // keep onlu 5 backup at a time
+		  			foundFile.backup.splice(0,1);
+		  		}
+
+		  		foundFile.save(function(err){
+		  			if(!err){
+		  				socket.emit('notify', {type:'info', text:'File backed-up successfully.'});
+		  			}else{
+		  				socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not backup the file.'});
+		  			}
+		  		});
+
+			}else{
+				socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not backup the file.'});
+				console.log('Cannot Backup the File' + fileId);
+			}
+		});
+	  });
+
+	  socket.on('listBackups', function (fileId) {
+	    console.log("Backup File:" + fileId);   
+
+	    models.File.findById(fileId, function(err, foundFile){
+		  	if (foundFile != null) {
+		  		if(!foundFile.backup){
+
+		  		}else{
+		  			var backupList = new Array();
+		  			foundFile.backup.forEach(function(bc){
+		  				var time = new Date(bc.time);
+		  				backupList.push({
+		  					fileId:foundFile._id,
+		  					time : time.toUTCString(),
+			  				backedupBy : bc.backedupBy,
+			  				_id : bc._id
+		  				});
+		  			});
+		  			socket.emit('listBackups', backupList);
+		  		}
+
+			}else{
+				socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not locate the backups.'});
+				console.log('Cannot Backup the File' + fileId);
+			}
+		});
+	  });
+
+	  socket.on('restoreBackup', function (backup) {
+	    console.log("Restoring Backup:" + backup._id);   
+
+	    models.File.findById(backup.fileId, function(err, foundFile){
+		  	if (!err && foundFile != null) {
+		  		if(!foundFile.backup){
+		  			console.log("No backups found");
+		  		}else{
+		  			for(i=0; i<foundFile.backup.length;i++){
+		  				if(foundFile.backup[i]._id==backup._id){
+		  					break;
+		  				}
+		  			}
+		  			console.log("selected backup found at:" + i);
+		  			if(i<foundFile.backup.length){
+		  				if(i+1<foundFile.backup.length){
+		  					foundFile.backup.splice(i+1); // remove all the later backups
+		  				}
+		  				var contentsBeforeRestore = foundFile.contents;
+		  				foundFile.contents = foundFile.backup[i].contents;
+		  				foundFile.modifiedBy = "userid";
+		  				foundFile.modifiedOn = Date.now();
+		  				foundFile.save(function(err){
+		  					if(!err){		  						 
+		  						var patch ={
+		  							'id':foundFile._id, 
+		  							'name':foundFile.name, 
+		  							'patch': diff_launch(contentsBeforeRestore, foundFile.contents)
+		  						};
+		  						file.in(socket.room).emit('updateFile',  patch);
+		  						socket.emit('notify', {type:'info', text:'Backup Restored Successfully'});
+		  					}else{
+		  						console.log(err);
+		  						socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not restore the backup.'});
+		  					}
+		  				});
+		  			}
+		  				
+		  		}
+
+			}else{
+				socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not locate the backup.'});
+				console.log('Could not restore File' + backup._id);
+			}
+		});
 	  });
 
 	  socket.on('disconnect', function(){
@@ -262,6 +371,16 @@ module.exports = function(io, models, diff_match_patch){
 		  }
 		  return elementIndex;
 		};
+
+
+		function diff_launch(text1, text2) {
+			var dmp = new diff_match_patch.diff_match_patch();
+			var diff = dmp.diff_main(text1, text2, true);
+			if (diff.length > 2) {
+			  dmp.diff_cleanupSemantic(diff);
+			}
+			return dmp.patch_make(text1, text2, diff);
+		}
 
 	});
 };

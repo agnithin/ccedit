@@ -9,6 +9,15 @@
     font-size: 18px;
 }
 
+.nav-tabs > li .dropdown{
+    margin: -30px 10px 0 10px;
+    font-size: 18px;
+    float:right;
+}
+.nav-tabs > li a{
+  padding-right:35px;
+}
+
 #code-content{
 	padding:10px;
 }
