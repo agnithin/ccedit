@@ -1,30 +1,37 @@
 
-module.exports = function(io, models, diff_match_patch){
+module.exports = function(io, models, diff_match_patch, sessionStore, sessionKey, sessionSecret){
 	
 	// socket auth
-	/*parseCookie = require('connect').utils.parseCookie;
-	io.configure(function () {
-	io.set('authorization', function (data, accept) {
-	    if (data.headers.cookie) {
-	        data.cookie = parseCookie(data.headers.cookie);
-	        data.sessionID = data.cookie['session.sid'];
-	        sessionStore.get(data.sessionID, function (err, session) {
-	            if (err || !session || (typeof session.twitter.user == 'undefined')) {
-	                accept(null, false);
-	            }
-	            else {
-	                data.session = session;
-	                accept(null, true);
-	            }
-	        });
-	    }
-	    else {
-	        return accept(null, false);
-	    }
+	
+	
+
+	/*io.configure(function () {
+		io.set('authorization', function (data, accept) {
+		    if (data.headers.cookie) {
+
+				data.cookie = require('express/node_modules/cookie').parse(data.headers.cookie);
+			    //data.cookie.expires = false;
+			    data.sessionID = require('connect').utils.parseSignedCookie(data.cookie[sessionKey], sessionSecret);
+			    //data.sessionID = data.cookie[sessionKey];
+			    //data.sessionStore = sessionStore;
+
+			    console.log("data:%j", data)
+			    console.log("=============\nsessionstore:%j", sessionStore)
+			    sessionStore.get(data.sessionID, function (err, session) {
+			        console.log(err, session);
+			        if (err || !session)
+			            return accept('Error', false);
+			        data.session = new Session(data, session);
+			        return accept(null, true);
+			    });
+			}else {
+		        return accept(null, false);
+		    }
+		});
 	});*/
 
-	var file = io
-	.of('/file')
+	var projectSocket = io
+	.of('/project')
 	.on('connection', function (socket) {
 
 	  socket.on('getFile', function (fileId) {
@@ -34,7 +41,7 @@ module.exports = function(io, models, diff_match_patch){
 		  	if (fileContents != null) {
 		  		socket.emit('getFile', fileContents);
 			}else{
-				socket.emit('getFile', "");
+				socket.emit('notify', {type:'danger', text:'Oops! Could not locate the file on server. This could be because someone else deleted this file.'});
 				console.log('Cannot Find the File' + fileId);
 			}
 		});
@@ -83,8 +90,8 @@ module.exports = function(io, models, diff_match_patch){
 		  					if(err){
 		  						socket.emit('notify', {type:'danger', text:'Oops! Something went wrong! Could not add file to project.'});
 		  					}else{
-		  						file.in(socket.room).emit('getProject',  project);
-		  						file.in(socket.room).emit('notify', {type:'info', text:newFile.name + ' has been added to project'});
+		  						projectSocket.in(socket.room).emit('getProject',  project);
+		  						projectSocket.in(socket.room).emit('notify', {type:'info', text:newFile.name + ' has been added to project'});
 		  						//socket.emit('notify', {type:'info', text:'New File has been created'});
 		  						//socket.broadcast.to(socket.room).emit('notify', {type:'info', text:newFile.name + ' has been added to project'});
 		  					}
@@ -122,8 +129,8 @@ module.exports = function(io, models, diff_match_patch){
 	  						  			if(err){
 	  						  				socket.emit('notify', {type:'danger', text:'Oops! something went wrong. File has been removed from project, but could not be deleted permanently.'});
 	  						  			}else{
-	  						  				file.in(socket.room).emit('getProject',  project);
-	  						  				file.in(socket.room).emit('notify', {type:'info', text:deletedFileName + ' has been deleted from project'});
+	  						  				projectSocket.in(socket.room).emit('getProject',  project);
+	  						  				projectSocket.in(socket.room).emit('notify', {type:'info', text:deletedFileName + ' has been deleted from project'});
 	  						  			}
 	  						  		});
 	  							}else{
@@ -231,7 +238,7 @@ module.exports = function(io, models, diff_match_patch){
 		  							'name':foundFile.name, 
 		  							'patch': diff_launch(contentsBeforeRestore, foundFile.contents)
 		  						};
-		  						file.in(socket.room).emit('updateFile',  patch);
+		  						projectSocket.in(socket.room).emit('updateFile',  patch);
 		  						socket.emit('notify', {type:'info', text:'Backup Restored Successfully'});
 		  					}else{
 		  						console.log(err);
@@ -350,7 +357,7 @@ module.exports = function(io, models, diff_match_patch){
 			  	  				});
 			  	  			}
 			  	  			});
-			  	  			file.in(socket.room).emit('getProject',  project);
+			  	  			projectSocket.in(socket.room).emit('getProject',  project);
 			  	  		}
 			  	  	});
 

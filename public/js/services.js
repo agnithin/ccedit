@@ -1,20 +1,51 @@
-app.factory('fileSocket', function ($rootScope) {
-  var fileSocket = io.connect('http://localhost:3000/file');
+app.factory('projectSocket', function ($rootScope) {
+  var projectSocket = io.connect('http://localhost:3000/project');
   return {
     on: function (eventName, callback) {
-      fileSocket.on(eventName, function () {  
+      projectSocket.on(eventName, function () {  
         var args = arguments;
         $rootScope.$apply(function () {
-          callback.apply(fileSocket, args);
+          callback.apply(projectSocket, args);
         });
       });
     },
     emit: function (eventName, data, callback) {
-      fileSocket.emit(eventName, data, function () {
+      projectSocket.emit(eventName, data, function () {
         var args = arguments;
         $rootScope.$apply(function () {
           if (callback) {
-            callback.apply(fileSocket, args);
+            callback.apply(projectSocket, args);
+          }
+        });
+      })
+    },
+    connect : function(){
+      projectSocket.socket.connect();
+    },
+    disconnect : function(){
+      console.log("calling disconnect");
+      projectSocket.disconnect();
+    }
+  };
+});
+
+app.factory('chatSocket', function ($rootScope) {
+  var chatSocket = io.connect('http://localhost:3000/chat');
+  return {
+    on: function (eventName, callback) {
+      chatSocket.on(eventName, function () {  
+        var args = arguments;
+        $rootScope.$apply(function () {
+          callback.apply(chatSocket, args);
+        });
+      });
+    },
+    emit: function (eventName, data, callback) {
+      chatSocket.emit(eventName, data, function () {
+        var args = arguments;
+        $rootScope.$apply(function () {
+          if (callback) {
+            callback.apply(chatSocket, args);
           }
         });
       })
@@ -22,8 +53,8 @@ app.factory('fileSocket', function ($rootScope) {
   };
 });
 
-app.factory('chatSocket', function ($rootScope) {
-  var chatSocket = io.connect('http://localhost:3000/chat');
+app.factory('userSocket', function ($rootScope) {
+  var chatSocket = io.connect('http://localhost:3000/user');
   return {
     on: function (eventName, callback) {
       chatSocket.on(eventName, function () {  
@@ -85,17 +116,17 @@ app.factory('diffMatchPatch', function ($rootScope) {
 });
 
 
-/*angular.module('collaborationService', ['fileSocket'])
-.service('collaboration', function(fileSocket) {*/
+/*angular.module('collaborationService', ['projectSocket'])
+.service('collaboration', function(projectSocket) {*/
 /*
-app.factory('collaboration', ['$rootScope', 'fileSocket', function ($rootScope,  fileSocket) {
+app.factory('collaboration', ['$rootScope', 'projectSocket', function ($rootScope,  projectSocket) {
   var findUserString;// = '';
   var searchedUsers;// = new Array();
   var selectedUsers;// = new Array();
 
 
 
-  fileSocket.on('findUser', function(data){
+  projectSocket.on('findUser', function(data){
       searchedUsers = data.users;
     });
 
@@ -124,7 +155,7 @@ app.factory('collaboration', ['$rootScope', 'fileSocket', function ($rootScope, 
       if(findUserString.length<3){
         bootbox.alert("Enter minmum of 3 characters");
       }else{
-        fileSocket.emit('findUserByName', findUserString);
+        projectSocket.emit('findUserByName', findUserString);
       }
     },    
 
@@ -154,7 +185,7 @@ app.factory('collaboration', ['$rootScope', 'fileSocket', function ($rootScope, 
     },
 
     addSelectedUsersToProject : function(){
-      fileSocket.emit('addUsersToProject', {
+      projectSocket.emit('addUsersToProject', {
         'projectId':$rootScope.project._id,
         'users': selectedUsers
       });

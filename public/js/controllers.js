@@ -1,9 +1,49 @@
 /**************************
 * Controllers
 **************************/
-/** PROJECT CONTROLLER **/
-function MainCtrl($scope, $rootScope, $routeParams) {
+/** USER CONTROLLER **/
+function UserCtrl($scope, $rootScope, $routeParams, userSocket) {
   $rootScope.currentUser = user;
+
+  userSocket.on('connect', function(){
+    userSocket.emit('getProjects', $rootScope.currentUser._id);
+  });
+
+  userSocket.on('getProjects', function (projects) {
+    $scope.userProjects = projects;
+  });
+
+  $scope.deleteProject = function(project){
+    bootbox.confirm("<b>Are you sure you want to delete "+project.projectName+"?</b>" 
+      + "<br><br>WARNING: If you are the only collaborator of the project, the project and all its files would deleted." 
+      + " If there are other collaborators, the project will remain, but you wont have access to it."
+      , function(confirmed) {
+                    if(confirmed){
+                      userSocket.emit('deleteProject', {
+                        'userId' :$rootScope.currentUser._id,
+                        'projectId' : project.projectId
+                      });
+                      console.log('deleteProject:'+ $rootScope.currentUser._id + ":"+ project.projectId);
+                    }
+                });    
+  }
+
+  $scope.createProject = function(newProjectName, newProjectDesc){
+    var newProject = {
+      'name' : newProjectName,
+      'description' : newProjectDesc
+    };
+    console.log('createProject:',  JSON.stringify(newProject));
+    userSocket.emit('createProject', {
+      'user' : {
+        'userId': $rootScope.currentUser._id
+      },
+      'project': newProject
+    });
+    
+  }
+
+
 }
 
 
@@ -12,47 +52,54 @@ function MainCtrl($scope, $rootScope, $routeParams) {
 
 
 /** PROJECT CONTROLLER **/
-function ProjectCtrl($scope, $rootScope, $routeParams, fileSocket) {
+function ProjectCtrl($scope, $rootScope, $routeParams, projectSocket) {
   $rootScope.project = {'_id':$routeParams.projectId, 'name':'New Project'};
   
   $scope.newFileName;
   $scope.showAddNewFileTextbox = false;
+
+  $scope.$on('$destroy', function() {
+   console.log("destroying proj controller");
+   projectSocket.disconnect(); 
+ });
+
+  console.log("inside proj controller");
 
   $scope.openFile = function(fileId){
     $rootScope.$broadcast('openFile', fileId);
   }
 
   $scope.addFile = function(){
-   fileSocket.emit('createFile', {'projectId':$rootScope.project._id, 'fileName':$scope.newFileName});
+   projectSocket.emit('createFile', {'projectId':$rootScope.project._id, 'fileName':$scope.newFileName});
    $scope.newFileName = '';
    $scope.showAddNewFileTextbox = false;
   };
 
   $scope.showAddFile = function(){
-    $scope.showAddNewFileTextbox = true;    
+    $scope.showAddNewFileTextbox = !$scope.showAddNewFileTextbox;    
   }
 
   $scope.deleteFile = function(fileId, fileName){    
-
+    projectSocket.disconnect();
     bootbox.confirm("Are you sure you want to delete "+fileName+"?", function(confirmed) {
                     if(confirmed){
                       $rootScope.$broadcast('closeFile', fileId);
-                      fileSocket.emit('deleteFile', {'projectId':$rootScope.project._id, 'fileId':fileId});
+                      projectSocket.emit('deleteFile', {'projectId':$rootScope.project._id, 'fileId':fileId});
                     }
                 });         
   };
   /* TODO delete file push activity required to close file in other window */
 
-  fileSocket.on('connect', function(){
-    console.log("filesocket connected");
-    fileSocket.emit('getProject', $rootScope.project._id);
+  projectSocket.on('connect', function(){
+    console.log("projectSocket connected");
+    projectSocket.emit('getProject', $rootScope.project._id);
   });  
 
-  fileSocket.on('getProject', function (newProject) {
+  projectSocket.on('getProject', function (newProject) {
     $rootScope.project = newProject;
   });
 
-  fileSocket.on('notify', function (data) {
+  projectSocket.on('notify', function (data) {
     console.log("recieved notification" + JSON.stringify(data));
     $scope.createNotification(data);
   });
@@ -87,11 +134,11 @@ function ProjectCtrl($scope, $rootScope, $routeParams, fileSocket) {
     if($scope.findUserString.length<3){
       bootbox.alert("Enter minmum of 3 characters");
     }else{
-      fileSocket.emit('findUserByName', $scope.findUserString);
+      projectSocket.emit('findUserByName', $scope.findUserString);
     }
   }
 
-  fileSocket.on('findUser', function(data){
+  projectSocket.on('findUser', function(data){
     $scope.searchedUsers = data.users;
   });
 
@@ -121,7 +168,7 @@ function ProjectCtrl($scope, $rootScope, $routeParams, fileSocket) {
   }
 
   $scope.addSelectedUsersToProject = function(){
-    fileSocket.emit('addUsersToProject', {
+    projectSocket.emit('addUsersToProject', {
       'projectId':$rootScope.project._id,
       'users': $scope.selectedUsers
     });
@@ -142,7 +189,7 @@ function ProjectCtrl($scope, $rootScope, $routeParams, fileSocket) {
 
 
 /** FILE CONTROLLER **/
-function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
+function FileCtrl($scope, $rootScope, projectSocket, diffMatchPatch) {
   $scope.openFiles = [];
 
   var emptyFile = {'_id':'', 'name':'','contents':''};
@@ -151,7 +198,7 @@ function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
 
   $scope.openFile = function(fileId){
     if(getOpenFileIndex(fileId) == -1){ // if file not open then request file
-      fileSocket.emit('getFile', fileId);
+      projectSocket.emit('getFile', fileId);
     }else{// if file already among open files then activate tab
       $scope.changeActiveFile(fileId);
     }
@@ -184,13 +231,13 @@ function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
       /*console.log("=======Unpatched Text\n" + $scope.activeFileContentsBeforeChange);
       console.log("=======Patch\n" + diff);
       console.log("=======patched text\n" + patch_launch($scope.activeFileContentsBeforeChange, diff));*/
-      //fileSocket.emit('updateFile', $scope.activeFile);
-      fileSocket.emit('updateFile', {'id':$scope.activeFile._id, 'name':$scope.activeFile.name, 'patch': diff});
+      //projectSocket.emit('updateFile', $scope.activeFile);
+      projectSocket.emit('updateFile', {'id':$scope.activeFile._id, 'name':$scope.activeFile.name, 'patch': diff});
       $scope.activeFileContentsBeforeChange = $scope.activeFile.contents;
     }
   }
 
-  fileSocket.on('getFile', function (newFile) {
+  projectSocket.on('getFile', function (newFile) {
     if(newFile == ''){
       alert("file Not Found"); // remove alert and put bootstrap error message
       return;
@@ -199,7 +246,7 @@ function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
     $scope.changeActiveFile(newFile._id);
   });
 
-  fileSocket.on('updateFile', function (fileUpdate) {
+  projectSocket.on('updateFile', function (fileUpdate) {
     var fileIndex = getOpenFileIndex(fileUpdate.id);
     if(fileIndex != -1){
       /*console.log("=======Unpatched Text\n" + $scope.activeFile.contents);
@@ -255,16 +302,16 @@ function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
   $scope.backupFile = function(fileId){
     /* This should be removed */
     $('[data-toggle="dropdown"]').parent().removeClass('open');
-    fileSocket.emit('backupFile', fileId);
+    projectSocket.emit('backupFile', fileId);
   }
 
   $scope.initializeBackupList = function(fileId){
     $('[data-toggle="dropdown"]').parent().removeClass('open');
     $scope.selectedBackup = '';
-    fileSocket.emit('listBackups', fileId);
+    projectSocket.emit('listBackups', fileId);
   }
 
-  fileSocket.on('listBackups', function(backupList){
+  projectSocket.on('listBackups', function(backupList){
     $scope.backupList = backupList;
   })
 
@@ -276,7 +323,7 @@ function FileCtrl($scope, $rootScope, fileSocket, diffMatchPatch) {
   }
   $scope.restoreBackup = function(){
     console.log("restoring backup");
-    fileSocket.emit('restoreBackup', $scope.selectedBackup);
+    projectSocket.emit('restoreBackup', $scope.selectedBackup);
   }
 }
 

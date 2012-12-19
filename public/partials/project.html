@@ -44,19 +44,23 @@
             <div class="span2">
               <div class="well sidebar-nav">
                 <ul id="project-files" class="nav nav-list">
-                  <li class="nav-header">Files <button class="close" type="button" ng-click="showAddFile()" rel="tooltip" title="Add a new file">+</button></li>
+                  <li class="nav-header">
+                    Files <button class="close" type="button" ng-click="showAddFile()" rel="tooltip" title="Add a new file">+</button>
+                  </li>
                   <!--<li class="active"><a href="#">Sample file</a></li>-->                  
-                  <li ng-repeat="file in project.files">
+                  <li ng-repeat="file in project.files" class="project-file">
                     <a ng-click="openFile(file.fileId)" >{{file.fileName}}</a>              
-                    <button class="close" ng-click="deleteFile(file.fileId, file.fileName)" rel="tooltip" title="Delete file"><i class="icon-trash"></i></button>                                      
+                    <button class="close" ng-click="deleteFile(file.fileId, file.fileName)" rel="tooltip" title="Delete file">
+                      <i class="icon-trash"></i>
+                    </button>                                      
                   </li>
 
-                  <li ng-show="showAddNewFileTextbox">
+                  <li ng-show="showAddNewFileTextbox" class="new-file-name">
                     <form id="newfileForm" ng-submit="addFile()">
-                      <input id="newfileName" placeholder="Specify the filename" ng-model="newFileName" focus-on="showAddNewFileTextbox" required>                      
+                      <input id="newfileName" placeholder="Specify the filename" ng-model="newFileName" focus-on="showAddNewFileTextbox" required class="input-small-modified">                      
                     </form>
-                    <button class="close" ng-click="showAddNewFileTextbox=false"><i class="icon-remove"></i></button>
-                    <span class="error" ng-show="newfileForm.input.$error.REQUIRED">Required!</span>
+                    <!--<button class="close" ng-click="showAddNewFileTextbox=false"><i class="icon-remove"></i></button>
+                    <span class="error" ng-show="newfileForm.input.$error.REQUIRED">Required!</span> -->
                   </li>
                   
                 </ul>
@@ -145,7 +149,7 @@
                     <b>{{log.username}}:</b> {{log.data}}
                   </li>
                 </ul>
-                <textarea id="chat-text" rows="4" ng-model='chatText' ui-keypress="{13:'sendChat()'}"></textarea>
+                <textarea id="chat-text" rows="4" ng-model='chatText' ui-keypress="{13:'sendChat()'}" class="input-small-modified"></textarea>
                 <!-- <input type="button" value="Send" id="send-button" ng-click='sendChat()'> -->              
               </div><!-- /CHAT BAR -->
 

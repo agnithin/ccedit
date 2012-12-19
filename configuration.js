@@ -1,4 +1,4 @@
-module.exports = function(app, express, path, passport){
+module.exports = function(app, express, path, passport, sessionStore, sessionKey, sessionSecret){
 
 	app.configure(function(){
 	  app.set('port', process.env.PORT || 3000);
@@ -9,8 +9,11 @@ module.exports = function(app, express, path, passport){
 	  app.use(express.bodyParser());
 	  app.use(express.methodOverride());
 
-	  app.use(express.cookieParser()); 
-	  app.use(express.session({secret:'blue_frog'}));
+	  app.use(express.cookieParser(sessionSecret)); 
+	  app.use(express.session({
+	  	store: sessionStore,
+	  	key: sessionKey
+	  }));
 
 	  app.use(passport.initialize());
 	  app.use(passport.session());

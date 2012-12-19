@@ -20,7 +20,7 @@ module.exports = function(io){
 	    if(!onlineUsers[socket.room]){
 	    	onlineUsers[socket.room] = new Array();
 	    }
-	    if(onlineUsers[socket.room].indexOf(socket.username) == -1){ // if user opens a new tab, dong show usrename twice
+	    if(onlineUsers[socket.room].indexOf(socket.username) == -1){ // if user opens a new tab, dont add username twice
 	    	onlineUsers[socket.room].push(socket.username);
 	    }
 	    // echo to client they've connected

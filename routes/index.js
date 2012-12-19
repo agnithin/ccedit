@@ -19,7 +19,7 @@ module.exports = function (app, models) {
 	  
 	});
 
-	app.get('/project/:id', ensureAuthenticated, function(req, res){	  
+	/*app.get('/project/:id', ensureAuthenticated, function(req, res){	  
 		res.render('project', { 
 			'user': {
 				'displayName':req.user.displayName, 
@@ -27,9 +27,9 @@ module.exports = function (app, models) {
 				},
 			'projectId':req.params.id 
 		});
-	});
+	});*/
 
-	app.get('/project/create/:projectName', ensureAuthenticated, function(req, res){	  
+	/*app.get('/project/create/:projectName', ensureAuthenticated, function(req, res){	  
 		
 		models.User.findById(req.user._id, function(err, user){
 		  	if (user != null) {
@@ -99,7 +99,6 @@ module.exports = function (app, models) {
 	  					  				console.log("project could not be deleted");
 	  					  			}else{
 	  					  				console.log("project deleted");
-	  					  				/* REMOVE INDIVIDUAL FILES */
 	  					  				
 	  					  			}
 	  					  		});
@@ -114,7 +113,7 @@ module.exports = function (app, models) {
 			}
 		});
 
-	});
+	});*/
 
 	app.get('/login', function(req, res){
 	  res.render('login', { user: req.user });

@@ -18,9 +18,21 @@
   padding-right:35px;
 }
 
+.project-file button.close{
+  margin: -20px 0 0 10px;
+}
+.new-file-name button.close{
+  margin: -40px 0 0 10px;
+}
+
 #code-content{
 	padding:10px;
 }
+
+.input-small-modified {
+    width: 90%;
+}
+
 /*
 body{
   position:relative;

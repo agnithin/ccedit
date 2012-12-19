@@ -11,6 +11,11 @@ var express = require('express')
   , passport = require('passport')
   , TwitterStrategy = require('passport-twitter').Strategy;
 
+var MemoryStore = express.session.MemoryStore,
+	sessionStore = new MemoryStore(),
+	sessionSecret = "blue_frog",
+	sessionKey = 'connect.sid';  
+
 var environment = require('./environment.js')
   , service = require('./service.js');
 service.init(environment);
@@ -23,7 +28,7 @@ models.File = service.useModel('file');
 require('./auth.js')(passport, TwitterStrategy, models);
 
 var app = express();
-require('./configuration')(app, express, path, passport);
+require('./configuration')(app, express, path, passport, sessionStore, sessionKey, sessionSecret);
 
 // include routes
 require('./routes/index')(app, models)
@@ -36,5 +41,6 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 // websocket controllers
 var io = require('socket.io').listen(server);
 
+require('./controllers/userController.js')(io, models);
 require('./controllers/chatController.js')(io);
-require('./controllers/fileController.js')(io, models, diff_match_patch);
+require('./controllers/projectController.js')(io, models, diff_match_patch, sessionStore, sessionKey, sessionSecret);
