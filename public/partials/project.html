@@ -13,7 +13,7 @@
                 <ul class="nav">
                   <li class="active"><a href="#">Home</a></li>
                   <li><a href="#download">Download as Zip</a></li>
-                  <li><a href="#addCollabModal" data-toggle="modal" ng-click="initializeCollaborators()">Add Collaborators</a></li>
+                  <li><a href="#addCollabModal" data-toggle="modal" ng-click="initializeCollaborators(project)">Add Collaborators</a></li>
                   <li>
                     <form class="navbar-search pull-left">
                       <input type="text" id="file-search" data-provide="typeahead" ng-model="searchProject" class="search-query" placeholder="Search Project Files" ui-reset>
@@ -155,42 +155,7 @@
 
             </div><!--/CHAT AREA--> 
 
-          </div><!--/row--> 
-
-          <!-- ### NOTIFICATION AREA ### --> 
-          <div class='notifications bottom-left'></div> <!-- bootstrap-notify -->
-          
-          <!-- ### ADD COLLOBORATOR DIALOG ### --> 
-          <div id="addCollabModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-              <h3 id="myModalLabel">Add Collaborators</h3>
-            </div>
-            <div class="modal-body">
-              <form id="find-user" ng-submit="findUser()">
-                <input placeholder="Enter a Name to search" ng-model="findUserString">
-                <button class="btn" type="submit">Search</button>
-              </form>  
-                <table class="table table-hover">
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                  </tr>
-                  <tr ng-repeat="user in searchedUsers" ng-click="addToSelectedUsers(user)" ng-show="isUserSelected(user)">
-                    <td>{{user.displayName}}</td>
-                    <td>{{user.email}}</td>
-                  </tr>
-                </table>
-                <hr>
-                Selected Users: <span class="pager" ng-repeat="user in selectedUsers">
-                  <a href="" ng-click="removeFromSelectedUsers(user)" rel="tooltip" title="Remove user">{{user.displayName}}</a>
-                </span>              
-            </div>
-            <div class="modal-footer">
-              <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-              <button class="btn btn-primary" data-dismiss="modal" ng-class="{disabled: selectedUsers.length<1}" ng-click="addSelectedUsersToProject()">Update Collaborators</button>
-            </div>
-          </div> <!-- /ADD COLLOBORATOR DIALOG -->            
+          </div><!--/row-->      
 
           </div> <!-- /PAGE BODY -->
         </div>

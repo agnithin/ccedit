@@ -106,6 +106,20 @@ app.factory('bootbox', function ($rootScope) {
 });
 
 /***************************************************
+* jQuery Notification plugin
+***************************************************/
+app.factory('notificationService', function ($rootScope) {
+  return {
+    showNotification: function (notification) {
+      $('.notifications').notify({
+        message: { 'text': notification.text },
+        type: notification.type
+      }).show();
+    }
+  };
+});
+
+/***************************************************
 * Google Diff-Match_Patch Service
 ***************************************************/
 app.factory('diffMatchPatch', function ($rootScope) {

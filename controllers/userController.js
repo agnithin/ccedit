@@ -117,6 +117,96 @@ module.exports = function(io, models){
 
 		  });
 
+		  socket.on('findUserByName', function (searchString) {
+		    console.log("Find User:" + searchString);   
+
+		    models.User.find({'displayName': new RegExp(searchString, 'i')}, function(err, users){
+			  	if (users != null) {
+			  		var foundUsers = new Array();
+			  		for(i=0; i<users.length;i++){
+			  			var tUser = {
+				  			'_id' : users[i]._id,
+				  			'displayName' : users[i].displayName,
+				  			'email' : users[i].email,
+				  		}
+			  			foundUsers.push(tUser);
+			  		}
+
+			  		socket.emit('findUser', {
+			  			'searchString':searchString,
+			  			'users': foundUsers
+			  		});
+
+			  		console.log("Found "+users.length + " Users:" + users);
+				}else{
+					console.log("No users found");
+				}
+			});
+		  });
+
+
+	  	/* IMPORTANT REMOVE USERS STILL DOES NOT WORK */
+		socket.on('addUsersToProject', function (data) {
+		  	console.log("Adding users to project: %j", data);   
+
+		  	models.Project.findById(data.projectId, function(err, project){
+		  	  	if (project != null) {
+		  	  		/*for(i=0;i<data.users.length;i++){
+		  	  			if(getProjectIndex(project.users, data.users[i] ==-1)){
+			  	  			project.users.push({
+			  	  				'_id':data.users[i]._id,
+			  	  				'permissions':'rw'
+			  	  			});
+			  	  		}else{
+			  	  			data.users.splice(i,1); // remove already active users so that redunant projects are not added to user below
+			  	  			i--; // since altering the array
+			  	  		}
+			  	  	}*/
+			  	  	project.users = data.users;
+			  	  	project.save(function(err){
+			  	  		if(err){
+			  	  			socket.emit('notify', {type:'danger', text:'Oops! Something went wrong. Could not add users to project.'});
+			  	  		}else{
+			  	  			var usersArray = new Array();
+			  	  			for(i=0;i<data.users.length;i++){
+			  	  				usersArray.push(data.users[i].userId)
+			  	  			}
+			  	  			console.log("## usersArray:%j",usersArray);
+
+			  	  			models.User.find({'_id':{$in:usersArray}}, function(err, users){
+			  	  				console.log("## users:%j",users)
+			  	  				if(!err && users!=null){
+				  	  				users.forEach(function(usr){
+				  	  					console.log("========usr:"+usr.displayName +':' + getProjectIndex(usr.projects, project._id));
+				  	  					console.log("========projectId:"+project._id+"###:%j", usr.projects);
+				  	  					if(getProjectIndex(usr.projects, project._id) == -1){
+					  	  					usr.projects.push({
+					  	  						'projectId':project._id,
+					  	  						'projectName':project.name,
+					  	  						'permissions':project.permissions
+					  	  					});
+					  	  					usr.save(function(err){
+								  				if(err){
+								  					console.log("Error while adding project to user");
+								  				}else{
+								  					socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
+								  					userSocket.emit('refreshProjects');
+							  					}
+							  				});
+					  	  				}
+				  	  				});
+			  	  				}
+			  	  			});
+			  	  		}
+			  	  	});
+
+		  		}else{
+		  			socket.emit('notify', {type:'danger', text:'Oops! Could not locate the project.'});
+		  			console.log('Cannot Find the Project: ' + projectId);
+		  		}
+		  	});
+		});
+
 		var getProjectIndex = function(objectArray, elementId){
 		  var elementIndex = -1;
 		  for(i=0; i<objectArray.length; i++){
@@ -127,6 +217,7 @@ module.exports = function(io, models){
 		  }
 		  return elementIndex;
 		};
+
 		var getUserIndex = function(objectArray, elementId){
 		  var elementIndex = -1;
 		  for(i=0; i<objectArray.length; i++){
@@ -136,8 +227,6 @@ module.exports = function(io, models){
 		    }
 		  }
 		  return elementIndex;
-		};
-
-	  
+		};	  
 	});
 };

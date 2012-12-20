@@ -2,7 +2,7 @@
 * Controllers
 **************************/
 /** USER CONTROLLER **/
-app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket, bootbox) {
+app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket, bootbox, notificationService) {
   $rootScope.currentUser = user;
 
   userSocket.on('connect', function(){
@@ -43,9 +43,89 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket
         'userId': $rootScope.currentUser._id
       },
       'project': newProject
-    });
-    
+    });    
   }
+
+  /** ADD COLLABORATOR DIALOG **/
+  $scope.findUserString;// = '';
+  $scope.searchedUsers;// = new Array();
+  $scope.selectedUsers;// = new Array();
+
+  $scope.initializeCollaborators = function(project){
+    /*$scope.selectedUsers = new Array();
+    for(i=0;i<$rootScope.project.users.length;i++){
+      $scope.selectedUsers.push({
+        '_id':$rootScope.project.users[i].userId,
+        'displayName': $rootScope.project.users[i].displayName,
+        'permissions': $rootScope.project.users[i].permissions
+      });
+    }*/
+    $scope.selectedUsers = project.users;
+    $scope.findUserString = '';
+    $scope.searchedUsers = new Array();
+  }
+  $scope.findUser = function(){
+    if($scope.findUserString.length<3){
+      bootbox.alert("Enter minmum of 3 characters");
+    }else{
+      userSocket.emit('findUserByName', $scope.findUserString);
+    }
+  }
+
+  userSocket.on('findUser', function(data){
+    $scope.searchedUsers = data.users;
+  });
+
+  $scope.addToSelectedUsers = function(user){
+    if(getUserIndex($scope.selectedUsers, user.userId) == -1){
+      $scope.selectedUsers.push({
+        'userId':user._id,
+        'displayName': user.displayName,
+        'permissions' : 'rw'
+      });
+    }
+  }
+
+  $scope.removeFromSelectedUsers = function(user){
+    if(user.userId == $rootScope.currentUser._id){
+       bootbox.alert("You cannot remove your self from the project!");
+    }else{
+      var userIndex = getUserIndex($scope.selectedUsers, user.userId);
+      if(userIndex!=-1){
+        $scope.selectedUsers.splice(userIndex,1);
+      }
+    }
+  }
+
+  $scope.isUserSelected = function(user){
+    return getUserIndex($scope.selectedUsers, user._id) == -1;
+  }
+
+  $scope.addSelectedUsersToProject = function(project){
+    userSocket.emit('addUsersToProject', {
+      'projectId':project._id,
+      'users': $scope.selectedUsers
+    });
+  }
+
+  //this function is required because indexOf does not work when there is new search
+  var getUserIndex = function(userArrray, userId){
+    var userIndex = -1;
+    for(i=0; i<userArrray.length; i++){
+      if(userArrray[i].userId == userId){
+        userIndex = i;
+        break;
+      }
+    }
+    return userIndex;
+  }
+
+  /** NOTIFICATION SERVICE **/
+  $scope.$on('createNotification',  function (event, notification){
+    console.log("Notification:" + JSON.stringify(notification));
+    notificationService.showNotification(notification);
+  });
+
 });
 
 /** PROJECT CONTROLLER **/
@@ -98,106 +178,23 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
   });
 
   projectSocket.on('notify', function (data) {
-    console.log("recieved notification" + JSON.stringify(data));
-    $scope.createNotification(data);
+    $rootScope.$broadcast('createNotification', data);
   });
 
-  $scope.createNotification = function (notification){
-    console.log("showing notification" + JSON.stringify(notification));
-    $('.notifications').notify({
-        message: { 'text': notification.text },
-        type: notification.type
-      }).show();
-  }
 
-  /** ADD Collaborator DIALOG **/
-  $scope.findUserString;// = '';
-  $scope.searchedUsers;// = new Array();
-  $scope.selectedUsers;// = new Array();
-
-  $scope.initializeCollaborators = function(){
-    /*$scope.selectedUsers = new Array();
-    for(i=0;i<$rootScope.project.users.length;i++){
-      $scope.selectedUsers.push({
-        '_id':$rootScope.project.users[i].userId,
-        'displayName': $rootScope.project.users[i].displayName,
-        'permissions': $rootScope.project.users[i].permissions
-      });
-    }*/
-    $scope.selectedUsers = $rootScope.project.users;
-    $scope.findUserString = '';
-    $scope.searchedUsers = new Array();
-  }
-  $scope.findUser = function(){
-    if($scope.findUserString.length<3){
-      bootbox.alert("Enter minmum of 3 characters");
-    }else{
-      projectSocket.emit('findUserByName', $scope.findUserString);
-    }
-  }
-
-  projectSocket.on('findUser', function(data){
-    $scope.searchedUsers = data.users;
-  });
-
-  $scope.addToSelectedUsers = function(user){
-    if(getUserIndex($scope.selectedUsers, user.userId) == -1){
-      $scope.selectedUsers.push({
-        'userId':user._id,
-        'displayName': user.displayName,
-        'permissions' : 'rw'
-      });
-    }
-  }
-
-  $scope.removeFromSelectedUsers = function(user){
-    if(user.userId == $rootScope.currentUser._id){
-       bootbox.alert("You cannot remove your self from the project!");
-    }else{
-      var userIndex = getUserIndex($scope.selectedUsers, user.userId);
-      if(userIndex!=-1){
-        $scope.selectedUsers.splice(userIndex,1);
-      }
-    }
-  }
-
-  $scope.isUserSelected = function(user){
-    return getUserIndex($scope.selectedUsers, user._id) == -1;
-  }
-
-  $scope.addSelectedUsersToProject = function(){
-    projectSocket.emit('addUsersToProject', {
-      'projectId':$rootScope.project._id,
-      'users': $scope.selectedUsers
-    });
-  }
-
-  //this function is required because indexOf does not work when there is new search
-  var getUserIndex = function(userArrray, userId){
-    var userIndex = -1;
-    for(i=0; i<userArrray.length; i++){
-      if(userArrray[i].userId == userId){
-        userIndex = i;
-        break;
-      }
-    }
-    return userIndex;
-  }
-
-
-  /* TESTING ***/
+  // FILE SEARCH //
   $('#file-search').typeahead({
-                source: function(typeahead, query) {
-                    return_list = [];
-                    for(i=0;i<$scope.project.files.length;i++){
-                      return_list.push($scope.project.files[i].fileName);
-                    }
-                    //typeahead.process(return_list);
-                    query(return_list);                   
-                },
-                onselect: function(obj) {
-                  $('input[id="MessageUserId"]').val(obj);
-                }
+      source: function(typeahead, query) {
+          return_list = [];
+          for(i=0;i<$scope.project.files.length;i++){
+            return_list.push($scope.project.files[i].fileName);
+          }
+          //typeahead.process(return_list);
+          query(return_list);                   
+      },
+      onselect: function(obj) {
+        $('input[id="MessageUserId"]').val(obj);
+      }
   });
 
 });
@@ -373,7 +370,7 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   });
 
   chatSocket.on('notify', function (data) {
-    $scope.createNotification(data);
+    $rootScope.$broadcast('createNotification', data);
   });
 
   $scope.sendChat = function(){
