@@ -1,3 +1,6 @@
+/***************************************************
+* WebSocket service for Project, Chat and User
+***************************************************/
 app.factory('projectSocket', function ($rootScope) {
   var projectSocket = io.connect('http://localhost:3000/project');
   return {
@@ -20,11 +23,17 @@ app.factory('projectSocket', function ($rootScope) {
       })
     },
     connect : function(){
-      projectSocket.socket.connect();
+      console.log("connecting:" + projectSocket.socket.connected + "&&" + projectSocket.socket.connecting);
+      if (projectSocket.socket.connected === false &&
+            projectSocket.socket.connecting === false) {
+            // use a connect() or reconnect() here if you want
+            console.log("inside connecting:");
+            projectSocket.socket.connect();
+       }
     },
     disconnect : function(){
-      console.log("calling disconnect");
-      projectSocket.disconnect();
+      console.log("dis - connecting");
+      projectSocket.socket.disconnect();
     }
   };
 });
@@ -78,6 +87,25 @@ app.factory('userSocket', function ($rootScope) {
 });
 
 /***************************************************
+* jQuery BootBox plugin for alerts and prompts
+***************************************************/
+app.factory('bootbox', function ($rootScope) {
+  return {
+    confirm: function (text, callback) {
+      bootbox.confirm(text, function () {  
+        var args = arguments;
+        $rootScope.$apply(function () {
+          callback.apply(bootbox, args);
+        });
+      });
+    },
+    alert: function (text) {
+      bootbox.alert(text);
+    }
+  };
+});
+
+/***************************************************
 * Google Diff-Match_Patch Service
 ***************************************************/
 app.factory('diffMatchPatch', function ($rootScope) {
@@ -114,84 +142,3 @@ app.factory('diffMatchPatch', function ($rootScope) {
       }
     }
 });
-
-
-/*angular.module('collaborationService', ['projectSocket'])
-.service('collaboration', function(projectSocket) {*/
-/*
-app.factory('collaboration', ['$rootScope', 'projectSocket', function ($rootScope,  projectSocket) {
-  var findUserString;// = '';
-  var searchedUsers;// = new Array();
-  var selectedUsers;// = new Array();
-
-
-
-  projectSocket.on('findUser', function(data){
-      searchedUsers = data.users;
-    });
-
-  //this function is required because indexOf does not work when there is new search
-  var getUserIndex = function(userArrray, userId){
-    var userIndex = -1;
-    for(i=0; i<userArrray.length; i++){
-      if(userArrray[i].userId == userId){
-        userIndex = i;
-        break;
-      }
-    }
-    return userIndex;
-  }
-
-  return {
-
-    initializeCollaborators : function(){
-      selectedUsers = $rootScope.project.users;
-      findUserString = '';
-      searchedUsers = new Array();
-      console.log("insideservice" +  JSON.stringify(selectedUsers));
-    },
-
-    findUser : function(){
-      if(findUserString.length<3){
-        bootbox.alert("Enter minmum of 3 characters");
-      }else{
-        projectSocket.emit('findUserByName', findUserString);
-      }
-    },    
-
-    addToSelectedUsers : function(user){
-      if(getUserIndex(selectedUsers, user.userId) == -1){
-        selectedUsers.push({
-          'userId':user._id,
-          'displayName': user.displayName,
-          'permissions' : 'rw'
-        });
-      }
-    },
-
-    removeFromSelectedUsers : function(user){
-      if(user.userId == currentUser._id){
-         bootbox.alert("You cannot remove your self from the project!");
-      }else{
-        var userIndex = getUserIndex(selectedUsers, user.userId);
-        if(userIndex!=-1){
-          selectedUsers.splice(userIndex,1);
-        }
-      }
-    },
-
-    isUserSelected : function(user){
-      return getUserIndex(selectedUsers, user._id) == -1;
-    },
-
-    addSelectedUsersToProject : function(){
-      projectSocket.emit('addUsersToProject', {
-        'projectId':$rootScope.project._id,
-        'users': selectedUsers
-      });
-    }   
-
-  }
-}]);
-
-*/

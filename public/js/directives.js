@@ -2,14 +2,14 @@
 
 /* Directives */
 
-angular.module('myApp.directives', [])
+angular.module('cceditApp.directives', [])
   .directive('appVersion', ['version', function(version) {
     return function(scope, elm, attrs) {
       elm.text(version);
     };
   }]);
 
-angular.module('myApp.directives', [])
+angular.module('cceditApp.directives', [])
 .directive('focusOn', function( $timeout ) {
   return function( scope, elem, attrs ) {
     scope.$watch(attrs.focusOn, function( newval ) {

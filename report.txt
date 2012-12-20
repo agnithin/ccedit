@@ -64,4 +64,22 @@ http://css.dzone.com/articles/oauth-authentication
 
 dan suggestions:
 file history: list of recently edited files
-some kind of version control system
+remove backup selectively
+in chat show the lin numbers being edited
+
+report
+issues faced
+
+
+
+
+angularjs
+declaritive my adding tags and attributes. 
+also provides two way data binding
+uses plain old javascript objects
+good integration with jquery
+good testing support
+
+
+bootstrap
+typeahead: http://tatiyants.com/how-to-use-json-objects-with-twitter-bootstrap-typeahead/

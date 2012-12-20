@@ -1,4 +1,4 @@
-        <div ng-controller="ProjectCtrl">
+        <div > <!--ng-controller="ProjectCtrl" -->
         <!-- ### PAGE HEADER ### -->
         <div class="navbar navbar-inverse navbar-fixed-top">
           <div class="navbar-inner">
@@ -16,7 +16,7 @@
                   <li><a href="#addCollabModal" data-toggle="modal" ng-click="initializeCollaborators()">Add Collaborators</a></li>
                   <li>
                     <form class="navbar-search pull-left">
-                      <input type="text" ng-model="searchProject" class="search-query" placeholder="Search Project Files" ui-reset>
+                      <input type="text" id="file-search" data-provide="typeahead" ng-model="searchProject" class="search-query" placeholder="Search Project Files" ui-reset>
                     </form>
                   </li>
                 </ul>            

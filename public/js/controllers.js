@@ -2,7 +2,7 @@
 * Controllers
 **************************/
 /** USER CONTROLLER **/
-function UserCtrl($scope, $rootScope, $routeParams, userSocket) {
+app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket, bootbox) {
   $rootScope.currentUser = user;
 
   userSocket.on('connect', function(){
@@ -11,6 +11,10 @@ function UserCtrl($scope, $rootScope, $routeParams, userSocket) {
 
   userSocket.on('getProjects', function (projects) {
     $scope.userProjects = projects;
+  });
+
+  userSocket.on('refreshProjects', function () {
+    userSocket.emit('getProjects', $rootScope.currentUser._id);
   });
 
   $scope.deleteProject = function(project){
@@ -42,28 +46,23 @@ function UserCtrl($scope, $rootScope, $routeParams, userSocket) {
     });
     
   }
-
-
-}
-
-
-
-
-
+});
 
 /** PROJECT CONTROLLER **/
-function ProjectCtrl($scope, $rootScope, $routeParams, projectSocket) {
+app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, projectSocket, bootbox) {
   $rootScope.project = {'_id':$routeParams.projectId, 'name':'New Project'};
   
   $scope.newFileName;
   $scope.showAddNewFileTextbox = false;
 
   $scope.$on('$destroy', function() {
-   console.log("destroying proj controller");
+   //console.log("destroying proj controller");
    projectSocket.disconnect(); 
- });
+  });
 
-  console.log("inside proj controller");
+  //projectSocket.emit('getProject', $rootScope.project._id);
+  projectSocket.connect();
+  
 
   $scope.openFile = function(fileId){
     $rootScope.$broadcast('openFile', fileId);
@@ -80,7 +79,6 @@ function ProjectCtrl($scope, $rootScope, $routeParams, projectSocket) {
   }
 
   $scope.deleteFile = function(fileId, fileName){    
-    projectSocket.disconnect();
     bootbox.confirm("Are you sure you want to delete "+fileName+"?", function(confirmed) {
                     if(confirmed){
                       $rootScope.$broadcast('closeFile', fileId);
@@ -185,11 +183,28 @@ function ProjectCtrl($scope, $rootScope, $routeParams, projectSocket) {
     }
     return userIndex;
   }
-}
+
+
+  /* TESTING ***/
+  $('#file-search').typeahead({
+                source: function(typeahead, query) {
+                    return_list = [];
+                    for(i=0;i<$scope.project.files.length;i++){
+                      return_list.push($scope.project.files[i].fileName);
+                    }
+                    //typeahead.process(return_list);
+                    query(return_list);                   
+                },
+                onselect: function(obj) {
+                  $('input[id="MessageUserId"]').val(obj);
+                }
+  });
+
+});
 
 
 /** FILE CONTROLLER **/
-function FileCtrl($scope, $rootScope, projectSocket, diffMatchPatch) {
+app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, diffMatchPatch) {
   $scope.openFiles = [];
 
   var emptyFile = {'_id':'', 'name':'','contents':''};
@@ -325,11 +340,11 @@ function FileCtrl($scope, $rootScope, projectSocket, diffMatchPatch) {
     console.log("restoring backup");
     projectSocket.emit('restoreBackup', $scope.selectedBackup);
   }
-}
+});
 
 
 /** CHAT CONTROLLER **/
-function ChatCtrl($scope, $timeout, $rootScope, chatSocket) {
+app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   
   $scope.chatLog = new Array();
   $scope.chatNotifications = [];
@@ -365,4 +380,4 @@ function ChatCtrl($scope, $timeout, $rootScope, chatSocket) {
     chatSocket.emit('sendchat', $scope.chatText);
     $scope.chatText = '';
   }
-}
+});

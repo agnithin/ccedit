@@ -34,6 +34,7 @@ module.exports = function(io, models, diff_match_patch, sessionStore, sessionKey
 	.of('/project')
 	.on('connection', function (socket) {
 
+	console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nproject socket connected");	
 	  socket.on('getFile', function (fileId) {
 	    console.log("Get File:" + fileId);   
 
@@ -256,11 +257,8 @@ module.exports = function(io, models, diff_match_patch, sessionStore, sessionKey
 		});
 	  });
 
-	  socket.on('disconnect', function(){
-	    
-	  });
+	  
 
-	  /* move these to a seperate project websocket controller maybe?? */
 	  socket.on('getProject', function (projectId) {
 	    console.log("Get Project:" + projectId);   
 
@@ -367,6 +365,10 @@ module.exports = function(io, models, diff_match_patch, sessionStore, sessionKey
 		  		}
 		  	});
 		});
+
+	socket.on('disconnect', function(){
+	    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nclient disconnected");
+	  });
 
 		var getElementIndex = function(objectArray, elementId){
 		  var elementIndex = -1;

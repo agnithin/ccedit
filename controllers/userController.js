@@ -57,7 +57,7 @@ module.exports = function(io, models){
         						}else{
         							console.log("Successfully created a new project");
         							socket.emit('notify', {type:'info', text:'Successfully created a new project.'});
-        							userSocket.emit('getProjects',  user.projects);
+        							userSocket.emit('refreshProjects');
         						}
         					});
     	    			}
@@ -76,7 +76,7 @@ module.exports = function(io, models){
 	    	models.Project.findById(data.projectId, function(err, project){
 	    	  	if (!err && project != null) {		  		
 	    	  		models.User.findById(data.userId, function(err,user){
-	    	  			var projIndex = getElementIndex(user.projects, project._id);
+	    	  			var projIndex = getProjectIndex(user.projects, project._id);
 	    	  			user.projects.splice(projIndex, 1);
 	    	  			user.save(function(err){
 	    	  				if(err){
@@ -84,14 +84,14 @@ module.exports = function(io, models){
 	    	  				}else{
 	    	  					// if other users are using the project then just delete the user from project
 	      				  		if(project.users.length>1){
-	      				  			var userIndex = getElementIndex(project.users, user._id);
+	      				  			var userIndex = getUserIndex(project.users, user._id);
 	      				  			project.users.splice(userIndex,1);
 	      				  			project.save(function(err){
 	      				  				if(err){
 	      				  					console.log("Error while removing user from project");
 	      				  				}else{
 	      				  					console.log("User removed from project");
-	      					  				userSocket.emit('getProjects',  user.projects);
+	      					  				userSocket.emit('refreshProjects');
 	      				  				}
 	      				  			})
 	      				  			console.log("user removed from proj");
@@ -103,7 +103,7 @@ module.exports = function(io, models){
 	      					  			}else{
 	      					  				console.log("project deleted");
 	      					  				/* TODO: REMOVE INDIVIDUAL FILES */
-	      					  				userSocket.emit('getProjects',  user.projects);
+	      					  				userSocket.emit('refreshProjects');
 	      					  			}
 	      					  		});
 	      					  	}
@@ -117,10 +117,20 @@ module.exports = function(io, models){
 
 		  });
 
-		var getElementIndex = function(objectArray, elementId){
+		var getProjectIndex = function(objectArray, elementId){
 		  var elementIndex = -1;
 		  for(i=0; i<objectArray.length; i++){
 		    if(objectArray[i].projectId.equals(elementId)){
+		      elementIndex = i;
+		      break;
+		    }
+		  }
+		  return elementIndex;
+		};
+		var getUserIndex = function(objectArray, elementId){
+		  var elementIndex = -1;
+		  for(i=0; i<objectArray.length; i++){
+		    if(objectArray[i].userId.equals(elementId)){
 		      elementIndex = i;
 		      break;
 		    }
