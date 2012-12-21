@@ -3,6 +3,7 @@
 ***************************************************/
 app.factory('projectSocket', function ($rootScope) {
   var projectSocket = io.connect('http://localhost:3000/project');
+  console.log("instantiating projectSocket service");
   return {
     on: function (eventName, callback) {
       projectSocket.on(eventName, function () {  
@@ -24,16 +25,25 @@ app.factory('projectSocket', function ($rootScope) {
     },
     connect : function(){
       console.log("connecting:" + projectSocket.socket.connected + "&&" + projectSocket.socket.connecting);
-      if (projectSocket.socket.connected === false &&
+      projectSocket.socket.connect();
+      /*if (projectSocket.socket.connected === false &&
             projectSocket.socket.connecting === false) {
             // use a connect() or reconnect() here if you want
             console.log("inside connecting:");
             projectSocket.socket.connect();
-       }
+       }*/
     },
     disconnect : function(){
       console.log("dis - connecting");
       projectSocket.socket.disconnect();
+    },
+    isConnected : function(){
+      console.log("connectios status:" + projectSocket.socket.connected + "&&" + projectSocket.socket.connecting);
+      return projectSocket.socket.connected === true ||
+            projectSocket.socket.connecting === true;
+    },
+    removeAllListeners : function(){
+      projectSocket.removeAllListeners();
     }
   };
 });
@@ -58,6 +68,9 @@ app.factory('chatSocket', function ($rootScope) {
           }
         });
       })
+    },
+    removeAllListeners : function(){
+      chatSocket.removeAllListeners();
     }
   };
 });

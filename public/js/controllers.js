@@ -128,21 +128,25 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket
 
 });
 
-/** PROJECT CONTROLLER **/
+/****************************
+* PROJECT CONTROLLER 
+****************************/
 app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, projectSocket, bootbox) {
   $rootScope.project = {'_id':$routeParams.projectId, 'name':'New Project'};
   
   $scope.newFileName;
   $scope.showAddNewFileTextbox = false;
 
-  $scope.$on('$destroy', function() {
-   //console.log("destroying proj controller");
-   projectSocket.disconnect(); 
-  });
+  if(projectSocket.isConnected()){
+    projectSocket.emit('getProject', $rootScope.project._id);
+  }else{
+    projectSocket.connect();
+  }
 
-  //projectSocket.emit('getProject', $rootScope.project._id);
-  projectSocket.connect();
-  
+  $scope.$on('$destroy', function() {
+   projectSocket.removeAllListeners();
+   //projectSocket.disconnect(); 
+  });  
 
   $scope.openFile = function(fileId){
     $rootScope.$broadcast('openFile', fileId);
@@ -250,6 +254,7 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
   }
 
   projectSocket.on('getFile', function (newFile) {
+    console.log("recieved file:" + newFile.name);
     if(newFile == ''){
       alert("file Not Found"); // remove alert and put bootstrap error message
       return;
@@ -348,10 +353,17 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   $scope.onlineUsers = [];
   $scope.chatText = '';
 
+  chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
+
+  $scope.$on('$destroy', function() {
+   chatSocket.emit('removeuser');
+   chatSocket.removeAllListeners(); 
+  });
+
   // on connection to server, ask for user's name with an anonymous callback
   chatSocket.on('connect', function(){
     // call the server-side function 'adduser' and send one parameter (value of prompt)
-    chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
+    //chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
   });
 
   // listener, whenever the server emits 'updatechat', this updates the chat body
