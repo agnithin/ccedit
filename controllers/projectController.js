@@ -257,6 +257,40 @@ module.exports = function(io, models, diff_match_patch, sessionStore, sessionKey
 		});
 	  });
 
+	  socket.on('deleteBackup', function (backup) {
+	    console.log("Deleting Backup:" + backup._id);   
+
+	    models.File.findById(backup.fileId, function(err, foundFile){
+		  	if (!err && foundFile != null) {
+		  		if(!foundFile.backup){
+		  			console.log("No backups found");
+		  		}else{
+		  			for(i=0; i<foundFile.backup.length;i++){
+		  				if(foundFile.backup[i]._id==backup._id){
+		  					break;
+		  				}
+		  			}
+		  			console.log("selected backup found at:" + i);
+		  			if(i<foundFile.backup.length){
+		  				foundFile.backup.splice(i,1);
+		  				foundFile.save(function(err){
+		  					if(!err){		  						 
+		  						socket.emit('notify', {type:'info', text:'Backup Deleted Successfully'});
+		  						socket.emit('refreshBackups', backup.fileId);
+		  					}else{
+		  						console.log(err);
+		  						socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not delete the backup.'});
+		  					}
+		  				});
+		  			}		  				
+		  		}
+			}else{
+				socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not delete the backup.'});
+				console.log('Could not delete File' + backup._id);
+			}
+		});
+	  });
+
 	  
 
 	  socket.on('getProject', function (projectId) {

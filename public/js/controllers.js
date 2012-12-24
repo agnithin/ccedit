@@ -399,6 +399,14 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
     console.log("restoring backup");
     projectSocket.emit('restoreBackup', $scope.selectedBackup);
   }
+  $scope.deleteBackup = function(){
+    console.log("deleting backup");
+    projectSocket.emit('deleteBackup', $scope.selectedBackup);
+  }
+  projectSocket.on('refreshBackups', function(fileId){
+    $scope.selectedBackup = '';
+    projectSocket.emit('listBackups', fileId);
+  })
 });
 
 

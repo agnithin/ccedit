@@ -124,6 +124,7 @@
                 </div>
                 <div class="modal-footer">
                   <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                  <button class="btn btn-danger" ng-disabled="selectedBackup==''" ng-class="{disabled: selectedBackup==''}" ng-click="deleteBackup()">Delete Selected Backup</button>
                   <button class="btn btn-primary" data-dismiss="modal" ng-disabled="selectedBackup==''" ng-class="{disabled: selectedBackup==''}" ng-click="restoreBackup()">Restore Selected Backup</button>
                 </div>
               </div><!-- /LIST BACKUPS DIALOG -->
