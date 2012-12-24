@@ -186,18 +186,26 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
   });
 
 
-  // FILE SEARCH //
+  // FILE SEARCH // MOVE THIS TO DIRECTIVES
   $('#file-search').typeahead({
-      source: function(typeahead, query) {
+      source: function(query, process) {
           return_list = [];
+          map = {};
+          data = new Array();
           for(i=0;i<$scope.project.files.length;i++){
-            return_list.push($scope.project.files[i].fileName);
+            data.push({
+              id: $scope.project.files[i].fileId, 
+              label: $scope.project.files[i].fileName});
           }
-          //typeahead.process(return_list);
-          query(return_list);                   
+          angular.forEach(data, function(object) {
+            map[object.label] = object;
+            return_list.push(object.label);
+          });
+          process(return_list);                 
       },
-      onselect: function(obj) {
-        $('input[id="MessageUserId"]').val(obj);
+      updater: function(item) {
+        $scope.openFile(map[item].id);
+        return item;
       }
   });
 
@@ -205,7 +213,7 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
 
 
 /** FILE CONTROLLER **/
-app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, diffMatchPatch) {
+app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, diffMatchPatch, codeMirrorMode) {
   $scope.openFiles = [];
 
   var emptyFile = {'_id':'', 'name':'','contents':''};
@@ -232,14 +240,63 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
      }
   }
 
+  /* CURSOR SYNCING */
+  $scope.othersCursors = new Array();
+
+  $scope.cursorActivity = function(cursor){
+    if($scope.activeFile._id != ''){
+      projectSocket.emit('updateCursor', {
+        'user':{
+          'userId' : $rootScope.currentUser._id,
+          'displayName' : $rootScope.currentUser.displayName
+        },
+        'projectId' : $rootScope.project._id,
+        'fileId' : $scope.activeFile._id,
+        'cursor' : cursor
+      });
+    }
+  }
+
+  projectSocket.on('updateCursor', function (data) {
+    for(i=0; i<$scope.othersCursors.length;i++){
+      if($scope.othersCursors[i].user.userId == data.user.userId){
+        $scope.othersCursors[i] = data;
+        break;
+      }
+    }
+    if(i==$scope.othersCursors.length){
+      $scope.othersCursors.push(data);
+    }
+    $scope.updateCursors();
+  });
+
+  $scope.updateCursors = function(){
+    angular.forEach($scope.othersCursors, function(userDetails){
+      if(userDetails.fileId == $scope.activeFile._id){
+        $rootScope.$broadcast('updateOthersCursor', userDetails);
+      }
+    });
+  }
+
   $scope.changeActiveFile = function(fileId){
+    $rootScope.$broadcast('clearOthersCursor');
     if(!fileId){
       $scope.activeFile = emptyFile;
     }else{
       $scope.activeFile = $scope.openFiles[getOpenFileIndex(fileId)];
       $scope.activeFileContentsBeforeChange = $scope.activeFile.contents;
+      $scope.updateCursors();
+
+      if($scope.activeFile.name.split(".").length>1){
+        var fileMode = codeMirrorMode.getMode($scope.activeFile.name.split(".")[$scope.activeFile.name.split(".").length-1]);
+        $rootScope.$broadcast('updateMode', fileMode);
+      }else{
+        $scope.fileMode = '';
+        console.log("mode not detected");
+      }      
     }
   }
+
 
   $scope.sendUpdatedFile = function(){
     if($scope.activeFile._id != ''){
@@ -369,8 +426,7 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   // listener, whenever the server emits 'updatechat', this updates the chat body
   chatSocket.on('updatechat', function (username, data) {
     if(username == 'SERVER'){
-      $scope.createNotification({type:'info', text:data});      
-
+      $rootScope.$broadcast('createNotification', {type:'info', text:data});
     }else{
       $scope.chatLog.push({'username': username, 'data' : data});
     }

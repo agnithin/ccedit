@@ -275,6 +275,11 @@ module.exports = function(io, models, diff_match_patch, sessionStore, sessionKey
 		});
 	  });
 
+	  socket.on('updateCursor', function (data) {
+	    console.log("Update Cursor:%j", data);   
+
+	    socket.broadcast.to(socket.room).emit('updateCursor',  data);
+	  });
 	  
 
 	socket.on('disconnect', function(){

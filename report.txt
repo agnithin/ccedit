@@ -25,6 +25,7 @@ https://github.com/werg/snucode
 
 syntax highlighting
 http://codemirror.net/
+http://ot.substance.io/demo/
 ace
 http://ajaxplorer.info/
 
@@ -52,12 +53,14 @@ http://www.adobe.com/devnet/html5/articles/flame-on-a-beginners-guide-to-emberjs
 angular good tuts ==============================
 http://www.html5rocks.com/en/tutorials/frameworks/angular-websockets/
 Folder structure: http://jsfiddle.net/eu81273/qCEjm/
+http://briantford.com/blog/angular-express.html
 
 passport local========
 https://github.com/saintedlama/passport-local-mongoose
 
 socketio auth
 http://stackoverflow.com/questions/13095418/how-to-use-passport-with-express-and-socket-io
+http://notjustburritos.tumblr.com/post/22682186189/socket-io-and-express-3
 
 passport good guide
 http://css.dzone.com/articles/oauth-authentication
@@ -69,6 +72,10 @@ in chat show the lin numbers being edited
 
 report
 issues faced
+
+angular+socketio
+https://github.com/phillro/angular-socket-event-handler
+https://gist.github.com/2974075
 
 
 
@@ -83,3 +90,6 @@ good testing support
 
 bootstrap
 typeahead: http://tatiyants.com/how-to-use-json-objects-with-twitter-bootstrap-typeahead/
+
+
+<pre class="CodeMirror-cursor" style="top: 42px; left: 40px;">&nbsp;</pre>

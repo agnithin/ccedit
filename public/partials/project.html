@@ -94,7 +94,7 @@
                 <div><!-- class="tab-content">  same tab, just contents change-->                  
                   <div class="tab-pane" class="active">                  
                     <div id="code-content" class="hero-unit">
-                      <textarea ui-codemirror="{lineNumbers: 'true', mode:'htmlmixed'}" ng-model="activeFile.contents" ng-modal-instant ng-change="sendUpdatedFile()"></textarea>                      
+                      <textarea ui-codemirror-mod="{lineNumbers: 'true', mode:'htmlmixed'}" ng-model="activeFile.contents" ng-modal-instant ng-change="sendUpdatedFile()" onCursorActivity="cursorActivity"></textarea>                      
                     </div>
                     <div class="row-fluid">            
                     </div><!--/row-->

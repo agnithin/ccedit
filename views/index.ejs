@@ -10,7 +10,7 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-        <link rel="stylesheet" href="../css/bootstrap.min.css">        
+        <link rel="stylesheet" href="/css/bootstrap.min.css">        
         <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
         <link rel="stylesheet" href="/css/main.css">
         <link rel="stylesheet" href="/css/codemirror.css">
@@ -88,7 +88,8 @@
         <script src="/js/vendor/bootstrap-notify.js"></script>
         <script src="/js/vendor/diff_match_patch.js"></script>
 
-        <script src="/js/vendor/codemirror-compressed.js"></script>
+        <script src="/js/vendor/codemirror-3.0.js"></script>
+        <script src="/js/vendor/codemirror-compressed-addons-3.0.js"></script>
         
         <!--http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js -->
         <script src="/js/vendor/angular.min.js"></script>
@@ -107,6 +108,7 @@
         <script>
           $(document).ready(function(){
             //$('.context').contextmenu();
+            $("[rel=tooltip]").tooltip();
           });
         </script>
 

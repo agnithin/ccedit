@@ -33,6 +33,57 @@
     width: 90%;
 }
 
+/**
+ *    Real-World CSS
+ *    by @visualidiot. Licensed under WTPFL.
+ *    Blink code borrowed from :http://visualidiot.com/articles/css3;
+ */
+ 
+/* @group Blink */
+.blink {
+    -webkit-animation: blink .75s linear infinite;
+    -moz-animation: blink .75s linear infinite;
+    -ms-animation: blink .75s linear infinite;
+    -o-animation: blink .75s linear infinite;
+    animation: blink .75s linear infinite;
+}
+
+@-webkit-keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 1; }
+    50.01% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+@-moz-keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 1; }
+    50.01% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+@-ms-keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 1; }
+    50.01% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+@-o-keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 1; }
+    50.01% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 1; }
+    50.01% { opacity: 0; }
+    100% { opacity: 0; }
+}
+/* @end */
+
 /*
 body{
   position:relative;
@@ -44,26 +95,6 @@ body{
   bottom:0px;
   right:10px;
 }*/
-
-/*#project-files li a{
-	padding-left:5px;
-	padding-right:5px;
-}*/
-
-/*
-#project-files.nav.nav-list{
-	padding-left:5px;
-	padding-right:5px;
-}
-#project-files li a{
-	padding-left:10px;
-	padding-right:10px;
-}
-#project-files li.nav-header{
-	padding-left:10px;
-	padding-right:10px;
-}
-*/
 
 /* Sticky footer styles
 -------------------------------------------------- */
