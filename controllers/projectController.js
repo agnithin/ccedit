@@ -1,8 +1,6 @@
 
 module.exports = function(io, models, diff_match_patch){
 	
-	// socket auth
-	
 	var projectSocket = io
 	.of('/project')
 	.on('connection', function (socket) {
@@ -10,7 +8,6 @@ module.exports = function(io, models, diff_match_patch){
 	console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nproject socket connected");
 	console.log(socket.handshake);
 
-		
 	  socket.on('getFile', function (fileId) {
 	    console.log("Get File:" + fileId);   
 
@@ -45,9 +42,6 @@ module.exports = function(io, models, diff_match_patch){
 	  socket.on('createFile', function (data) {
 	    console.log("create File:" + data.projectId + " : " +data.fileName);   
 
-	    /*var newFile = new models.File();
-	    newFile.name = data.fileName;
-	    newFile.contents = '';*/
 	    var newFile = new models.File({
 	    	'name' : data.fileName,
 	    	'contents' : "",
@@ -74,9 +68,7 @@ module.exports = function(io, models, diff_match_patch){
 		  					}
 		  				});
 		  			}
-		  		});
-		  		
-		  		
+		  		});  
 			}else{
 				console.log('Cannot Find the Project: ' + projectId);
 			}
@@ -265,9 +257,7 @@ module.exports = function(io, models, diff_match_patch){
 				console.log('Could not delete File' + backup._id);
 			}
 		});
-	  });
-
-	  
+	  });	  
 
 	  socket.on('getProject', function (projectId) {
 	    console.log("Get Project:" + projectId);   
@@ -289,21 +279,19 @@ module.exports = function(io, models, diff_match_patch){
 	    console.log("Update Cursor:%j", data);   
 
 	    socket.broadcast.to(socket.room).emit('updateCursor',  data);
-	  });
-	  
+	  });	  
 
-	socket.on('disconnect', function(){
+	  socket.on('disconnect', function(){
 	    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nclient disconnected");
 	  });
 
-	function diff_launch(text1, text2) {
+	  function diff_launch(text1, text2) {
 		var dmp = new diff_match_patch.diff_match_patch();
 		var diff = dmp.diff_main(text1, text2, true);
 		if (diff.length > 2) {
 		  dmp.diff_cleanupSemantic(diff);
 		}
 		return dmp.patch_make(text1, text2, diff);
-	}
-
+	  }
 	});
 };

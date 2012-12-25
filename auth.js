@@ -11,13 +11,10 @@ module.exports = function(passport, TwitterStrategy, models){
   //   this will be as simple as storing the user ID when serializing, and finding
   //   the user by ID when deserializing.  
   passport.serializeUser(function(user, done) {
-    //done(null, user);
-    console.log("===================================\n%j",user);
     done(null, user._id);
   });
 
   passport.deserializeUser(function(obj, done) {
-    //done(null, obj);
     models.User.findById(obj, function(err, user) {
        done(err, user);
      });
@@ -43,14 +40,13 @@ module.exports = function(passport, TwitterStrategy, models){
         // and return that user instead.
         return done(null, profile);
       });*/
-      //console.log("=====================================\n%j", profile);
       models.User.findOne({provider:'twitter', providerId: profile.id},
         function(err, user) {
-          if (!err && user != null) {
+          if (!err && user != null) { // returning user
             console.log("user found");
             models.User.update({"_id": user._id}, { $set: {lastConnected: new Date()} } ).exec();
             done(null, user);
-          } else {
+          } else { // firsttime user
             console.log("first time user");
             var userData = new models.User({
               displayName: profile.displayName,
@@ -70,13 +66,9 @@ module.exports = function(passport, TwitterStrategy, models){
             }); 
             console.log("Sending User: %j",userData);
             done(null, userData);           
-          }
-          
-
+          }     
         }
-      );
-      //var user = { id: profile.id, name: profile.username };
-      
+      );   
     }
   ))
 };
