@@ -1,40 +1,16 @@
 
-module.exports = function(io, models, diff_match_patch, sessionStore, sessionKey, sessionSecret){
+module.exports = function(io, models, diff_match_patch){
 	
 	// socket auth
 	
-	
-
-	/*io.configure(function () {
-		io.set('authorization', function (data, accept) {
-		    if (data.headers.cookie) {
-
-				data.cookie = require('express/node_modules/cookie').parse(data.headers.cookie);
-			    //data.cookie.expires = false;
-			    data.sessionID = require('connect').utils.parseSignedCookie(data.cookie[sessionKey], sessionSecret);
-			    //data.sessionID = data.cookie[sessionKey];
-			    //data.sessionStore = sessionStore;
-
-			    console.log("data:%j", data)
-			    console.log("=============\nsessionstore:%j", sessionStore)
-			    sessionStore.get(data.sessionID, function (err, session) {
-			        console.log(err, session);
-			        if (err || !session)
-			            return accept('Error', false);
-			        data.session = new Session(data, session);
-			        return accept(null, true);
-			    });
-			}else {
-		        return accept(null, false);
-		    }
-		});
-	});*/
-
 	var projectSocket = io
 	.of('/project')
 	.on('connection', function (socket) {
 
-	console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nproject socket connected");	
+	console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nproject socket connected");
+	console.log(socket.handshake);
+
+		
 	  socket.on('getFile', function (fileId) {
 	    console.log("Get File:" + fileId);   
 

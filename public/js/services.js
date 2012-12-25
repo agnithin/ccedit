@@ -2,7 +2,7 @@
 * WebSocket service for Project, Chat and User
 ***************************************************/
 app.factory('projectSocket', function ($rootScope) {
-  var projectSocket = io.connect('http://localhost:3000/project');
+  var projectSocket = io.connect().of('/project');
   console.log("instantiating projectSocket service");
   return {
     on: function (eventName, callback) {
@@ -49,7 +49,7 @@ app.factory('projectSocket', function ($rootScope) {
 });
 
 app.factory('chatSocket', function ($rootScope) {
-  var chatSocket = io.connect('http://localhost:3000/chat');
+  var chatSocket = io.connect().of('/chat');
   return {
     on: function (eventName, callback) {
       chatSocket.on(eventName, function () {  
@@ -76,7 +76,7 @@ app.factory('chatSocket', function ($rootScope) {
 });
 
 app.factory('userSocket', function ($rootScope) {
-  var chatSocket = io.connect('http://localhost:3000/user');
+  var chatSocket = io.connect().of('/user');
   return {
     on: function (eventName, callback) {
       chatSocket.on(eventName, function () {  
