@@ -3,7 +3,7 @@
 **************************/
 /** USER CONTROLLER **/
 app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket, bootbox, notificationService) {
-  $rootScope.currentUser = user;
+  /*$rootScope.currentUser = user;
 
   userSocket.on('connect', function(){
     userSocket.emit('getProjects', $rootScope.currentUser._id);
@@ -11,6 +11,14 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket
 
   userSocket.on('getProjects', function (projects) {
     $scope.userProjects = projects;
+  });*/
+
+  userSocket.on('connect', function(){
+    userSocket.emit('getUser');
+  });
+
+  userSocket.on('getUser', function (user) {
+    $rootScope.currentUser = user;
   });
 
   userSocket.on('refreshProjects', function () {

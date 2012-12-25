@@ -1,26 +1,11 @@
-
 module.exports = function (app, models) {
 
 	app.get('/', ensureAuthenticated, function(req, res){
-
-		if(req.user){
-		  	models.User.findOne({"_id": req.user._id}, function(err, user){
-			  	if (user != null) {
-			  		console.log('Found the User:' + user.displayName);
-			  		res.render('index', { 'user': req.user, 'projects':user.projects });
-				}else{
-					console.log('Cannot Find the User');
-					res.render('index', { 'user': req.user });
-				}
-		  	});
-		  }else{
-		  	res.render('index', { 'user': req.user });
-		  }
-	  
+		res.render('index');
 	});
 
 	app.get('/login', function(req, res){
-	  res.render('login', { user: req.user });
+	  res.render('login');
 	});
 
 	// Simple route middleware to ensure user is authenticated.
