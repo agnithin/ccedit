@@ -7,18 +7,15 @@ module.exports = function(io, models){
 
 		/* authorization */
 		if(!socket.handshake.session.passport.user){
-			userSocket.disconnect();
+			//userSocket.disconnect();
 		}
 		models.User.findById(socket.handshake.session.passport.user, function(err, user) {
 		   if(err){
-		   		userSocket.disconnect();
+		   		//userSocket.disconnect();
 			}else{
-		   		console.log(user);
-
 		   		  socket.on('getUser', function () {
 				    console.log("Get User:");
-				    socket.emit('getUser', user);   
-
+				    socket.emit('getUser', user);  
 				  });
 
 				  socket.on('getProjects', function (userId) {
@@ -59,6 +56,7 @@ module.exports = function(io, models){
 		    	    				user.projects.push(	{
 		    							"projectId" : newProject._id,
 		    							"projectName" : newProject.name,
+		    							"description" : newProject.description,
 		    							"permissions" : permissions
 		    						});
 		    						user.save(function(err){
@@ -157,22 +155,11 @@ module.exports = function(io, models){
 
 
 			  	/* IMPORTANT REMOVE USERS STILL DOES NOT WORK */
-				socket.on('addUsersToProject', function (data) {
+				/*socket.on('addUsersToProject', function (data) {
 				  	console.log("Adding users to project: %j", data);   
 
 				  	models.Project.findById(data.projectId, function(err, project){
 				  	  	if (project != null) {
-				  	  		/*for(i=0;i<data.users.length;i++){
-				  	  			if(getProjectIndex(project.users, data.users[i] ==-1)){
-					  	  			project.users.push({
-					  	  				'_id':data.users[i]._id,
-					  	  				'permissions':'rw'
-					  	  			});
-					  	  		}else{
-					  	  			data.users.splice(i,1); // remove already active users so that redunant projects are not added to user below
-					  	  			i--; // since altering the array
-					  	  		}
-					  	  	}*/
 					  	  	project.users = data.users;
 					  	  	project.save(function(err){
 					  	  		if(err){
@@ -208,6 +195,95 @@ module.exports = function(io, models){
 						  	  				});
 					  	  				}
 					  	  			});
+					  	  		}
+					  	  	});
+
+				  		}else{
+				  			socket.emit('notify', {type:'danger', text:'Oops! Could not locate the project.'});
+				  			console.log('Cannot Find the Project: ' + projectId);
+				  		}
+				  	});
+				});*/
+		   		//=============================================================================
+
+				socket.on('updateCollaborators', function (data) {
+				  	console.log("updating collaborators to project: %j", data);   
+
+				  	models.Project.findById(data.projectId, function(err, project){
+				  	  	if (project != null) {
+				  	  		//remove users from proj
+				  	  		data.users.remove.forEach(function(usr){
+				  	  			var userIndex = getUserIndex(project.users, usr.userId);
+				  	  			if(userIndex != -1){
+				  	  				project.users.splice(userIndex, 1);
+				  	  			}
+				  	  		});
+				  	  		//add users to proj
+				  	  		data.users.add.forEach(function(usr){
+				  	  			if(getUserIndex(project.users, usr.userId) == -1){
+				  	  				project.users.push(usr);
+				  	  			}
+				  	  		});
+					  	  	project.save(function(err){
+					  	  		if(err){
+					  	  			socket.emit('notify', {type:'danger', text:'Oops! Something went wrong. Could not add users to project.'});
+					  	  		}else{
+					  	  			var usersArray = new Array();
+					  	  			for(i=0;i<data.users.remove.length;i++){
+					  	  				usersArray.push(data.users.remove[i].userId)
+					  	  			}
+					  	  			models.User.find({'_id':{$in:usersArray}}, function(err, users){
+					  	  				console.log("## users:%j",users)
+					  	  				if(!err && users!=null){
+						  	  				users.forEach(function(usr){
+						  	  					console.log("========Del usr:"+usr.displayName +':' + getProjectIndex(usr.projects, project._id));
+						  	  					console.log("========projectId:"+project._id+"###:%j", usr.projects);
+						  	  					var projIndex = getProjectIndex(usr.projects, project._id);
+						  	  					if( projIndex != -1){
+							  	  					usr.projects.splice(projIndex, 1);
+							  	  					usr.save(function(err){
+										  				if(err){
+										  					console.log("Error while removing project from user");
+										  				}else{
+										  					//socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});										  					
+									  					}
+									  				});
+							  	  				}
+						  	  				});
+					  	  				}
+					  	  			});
+									
+									//add users
+									var usersArray = new Array();
+					  	  			for(i=0;i<data.users.remove.length;i++){
+					  	  				usersArray.push(data.users.remove[i].userId)
+					  	  			}					  	  			
+					  	  			models.User.find({'_id':{$in:usersArray}}, function(err, users){
+					  	  				console.log("## users:%j",users)
+					  	  				if(!err && users!=null){
+						  	  				users.forEach(function(usr){
+						  	  					console.log("========Add usr:"+usr.displayName +':' + getProjectIndex(usr.projects, project._id));
+						  	  					console.log("========projectId:"+project._id+"###:%j", usr.projects);
+						  	  					if(getProjectIndex(usr.projects, project._id) == -1){
+							  	  					usr.projects.push({
+							  	  						'projectId':project._id,
+							  	  						'projectName':project.name,
+							  	  						'permissions':project.permissions
+							  	  					});
+							  	  					usr.save(function(err){
+										  				if(err){
+										  					console.log("Error while adding project to user");
+										  				}else{
+										  					//socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
+										  					//userSocket.emit('refreshProjects');
+									  					}
+									  				});
+							  	  				}
+						  	  				});
+					  	  				}
+					  	  			});
+									socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
+									userSocket.emit('refreshProjects');
 					  	  		}
 					  	  	});
 

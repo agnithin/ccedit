@@ -1,4 +1,4 @@
-	<div class="navbar navbar-inverse navbar-fixed-top">
+	<!-- <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
           <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -22,24 +22,27 @@
                 </ul>
               </li>
             </ul>
-          </div><!--/.nav-collapse -->
+          </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div class="container">
       <h1>Your Projects</h1>
       
-      <div class="row-fluid">
+      <!--<div class="row-fluid"> -->
         <ul class="thumbnails">
           
-          <li ng-repeat="project in currentUser.projects" class="span3">
+          <li ng-repeat="project in currentUser.projects" class="span3" >
             <div class="thumbnail">
               <img data-src="holder.js/300x200" alt="">
               <div class="caption">
                 <h3>{{project.projectName}}</h3>
                 <p>{{project.description}}</p>
-                <p><a href="#/project/{{project.projectId}}" class="btn btn-primary">Open</a> <a ng-click="deleteProject(project)" class="btn">Delete</a></p>
+                <p>
+                  <a href="#/project/{{project.projectId}}" class="btn btn-primary">Open</a> 
+                  <a ng-click="deleteProject(project)" class="btn btn-danger">Delete</a>
+                </p>
               </div>
             </div>
           </li>
@@ -55,7 +58,7 @@
             </div>
           </li>
         </ul>
-      </div>
+      <!--</div> -->
 
       <!-- ### CREATE NEW PROJECT DIALOG ### -->
       <div id="createProject" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

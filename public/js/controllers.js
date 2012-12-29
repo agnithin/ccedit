@@ -2,7 +2,7 @@
 * Controllers
 **************************/
 /** USER CONTROLLER **/
-app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket, bootbox, notificationService) {
+app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, userSocket, bootbox, notificationService) {
   /*$rootScope.currentUser = user;
 
   userSocket.on('connect', function(){
@@ -13,16 +13,26 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket
     $scope.userProjects = projects;
   });*/
 
+  $scope.isProjectPage = function(){
+    if($rootScope.project){
+      return true;
+    }
+    return false;
+  }
   userSocket.on('connect', function(){
     userSocket.emit('getUser');
   });
 
   userSocket.on('getUser', function (user) {
     $rootScope.currentUser = user;
+    $rootScope.$broadcast('initializeWorkspace');
   });
 
   userSocket.on('refreshProjects', function () {
     userSocket.emit('getProjects', $rootScope.currentUser._id);
+  });
+  userSocket.on('getProjects', function (projects) {
+    $rootScope.currentUser.projects = projects;
   });
 
   $scope.deleteProject = function(project){
@@ -51,7 +61,9 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket
         'userId': $rootScope.currentUser._id
       },
       'project': newProject
-    });    
+    });
+    $scope.newProjectName = '';
+    $scope.newProjectDesc = '';    
   }
 
   /** ADD COLLABORATOR DIALOG **/
@@ -69,6 +81,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket
       });
     }*/
     $scope.selectedUsers = project.users;
+    $scope.updatedCollaborators = {add:[], remove:[]};
     $scope.findUserString = '';
     $scope.searchedUsers = new Array();
   }
@@ -91,13 +104,43 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket
         'displayName': user.displayName,
         'permissions' : 'rw'
       });
+
+      /*our new logic */
+      var userIndexInRemove = getUserIndex($scope.updatedCollaborators.remove, user._id)
+      if( userIndexInRemove != -1){ 
+        $scope.updatedCollaborators.remove.splice(userIndexInRemove,1);
+      }else{// if user already a collaborator
+        $scope.updatedCollaborators.add.push({
+          'userId':user._id,
+          'displayName': user.displayName,
+          'permissions' : 'rw'
+        });
+      }
+      /*new logic */
     }
+    console.log($scope.updatedCollaborators);
   }
 
   $scope.removeFromSelectedUsers = function(user){
     if(user.userId == $rootScope.currentUser._id){
        bootbox.alert("You cannot remove your self from the project!");
     }else{
+
+      /*our new logic */
+      var userIndexInAdd = getUserIndex($scope.updatedCollaborators.add, user.userId); //userId
+      console.log(userIndexInAdd);
+      if( userIndexInAdd != -1){ 
+        $scope.updatedCollaborators.add.splice(userIndexInAdd, 1);
+      }else{// if user already a collaborator
+        $scope.updatedCollaborators.remove.push({
+          'userId': user.userId,
+          'displayName': user.displayName,
+          'permissions' : 'rw'
+        });
+      }
+      /*new logic */
+      console.log($scope.updatedCollaborators);
+
       var userIndex = getUserIndex($scope.selectedUsers, user.userId);
       if(userIndex!=-1){
         $scope.selectedUsers.splice(userIndex,1);
@@ -110,9 +153,14 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket
   }
 
   $scope.addSelectedUsersToProject = function(project){
-    userSocket.emit('addUsersToProject', {
+    console.log($scope.updatedCollaborators);
+    /*userSocket.emit('addUsersToProject', {
       'projectId':project._id,
       'users': $scope.selectedUsers
+    });*/
+    userSocket.emit('updateCollaborators', {
+      'projectId':project._id,
+      'users': $scope.updatedCollaborators
     });
   }
 
@@ -141,18 +189,28 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, userSocket
 ****************************/
 app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, projectSocket, bootbox) {
   $rootScope.project = {'_id':$routeParams.projectId, 'name':'New Project'};
-  
+
+  var initializeProject = function(){
+    if(projectSocket.isConnected()){
+      projectSocket.emit('getProject', $rootScope.project._id);
+    }else{
+      projectSocket.connect();
+    }
+  };
+
+  if($rootScope.currentUser){
+    initializeProject();
+  }
+  $rootScope.$on('initializeWorkspace', function(){
+    initializeProject();
+  });
+
   $scope.newFileName;
   $scope.showAddNewFileTextbox = false;
 
-  if(projectSocket.isConnected()){
-    projectSocket.emit('getProject', $rootScope.project._id);
-  }else{
-    projectSocket.connect();
-  }
-
   $scope.$on('$destroy', function() {
    projectSocket.removeAllListeners();
+   $rootScope.project = '';
    //projectSocket.disconnect(); 
   });  
 
@@ -426,7 +484,21 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   $scope.onlineUsers = [];
   $scope.chatText = '';
 
-  chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
+  var initializeChat = function(){
+    if(chatSocket.isConnected()){
+      chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
+    }
+  };
+
+  //if user has been initialized then initialize chat
+  if($rootScope.currentUser){
+    initializeChat();
+  }
+  // if user has not been initialized wait for initialize event
+  // this is required when the project page is refreshed
+  $rootScope.$on('initializeWorkspace', function(){
+    initializeChat();
+  });  
 
   $scope.$on('$destroy', function() {
    chatSocket.emit('removeuser');
@@ -434,18 +506,14 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   });
 
   // on connection to server, ask for user's name with an anonymous callback
-  chatSocket.on('connect', function(){
+  /*chatSocket.on('connect', function(){
     // call the server-side function 'adduser' and send one parameter (value of prompt)
-    //chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
-  });
+    chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
+  });*/
 
   // listener, whenever the server emits 'updatechat', this updates the chat body
   chatSocket.on('updatechat', function (username, data) {
-    if(username == 'SERVER'){
-      $rootScope.$broadcast('createNotification', {type:'info', text:data});
-    }else{
-      $scope.chatLog.push({'username': username, 'data' : data});
-    }
+    $scope.chatLog.push({'username': username, 'data' : data});
   }); 
 
   // listener, whenever the server emits 'updateusers', this updates the username list

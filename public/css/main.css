@@ -25,12 +25,20 @@
   margin: -40px 0 0 10px;
 }
 
-#code-content{
-	padding:10px;
-}
-
 .input-small-modified {
     width: 90%;
+}
+.break-line{
+  clear: both
+}
+
+#code-content{
+  padding:10px;
+  height:480px;
+}
+
+.CodeMirror {
+  height: 100%;
 }
 
 /**
@@ -84,18 +92,64 @@
 }
 /* @end */
 
-/*
+
 body{
   position:relative;
 }
 
-#ccedit-chat{
-  position:absolute;
-  
-  bottom:0px;
-  right:10px;
-}*/
+#ccedit-chat {
+  position: fixed;
+  right: 10px;
+  bottom: 0;
+  margin-top: -2.5em;
+  z-index:100;
+}
 
+#chat-header{
+  color: #ffffff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+  background-color: #0088cc;
+}
+
+#chat-messages{
+  overflow:auto;
+  overflow-x:hidden;  
+  max-height:300px;
+  height:auto;
+  height:30%;
+}
+
+#chat-text{
+  margin-top:10px;
+}
+.nav-list{
+  word-wrap: break-word;
+}
+
+
+/* Sticky footer styles
+-------------------------------------------------- */
+/*
+html,
+body {
+  height: 100%;
+}
+
+#content {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+}
+
+#push,
+#footer {
+  height: 5%;
+}
+#footer {
+  clear:both;
+  background-color: #f5f5f5;
+}
+*/
 /* Sticky footer styles
 -------------------------------------------------- */
 
@@ -106,18 +160,18 @@ body {
 }
 
 /* Wrapper for page content to push down footer */
-#content {
+#wrap {
   min-height: 100%;
   height: auto !important;
   height: 100%;
   /* Negative indent footer by it's height */
-  margin: 0 auto -60px;
+  margin: 0 auto -80px;
 }
 
 /* Set the fixed height of the footer here */
 #push,
 #footer {
-  height: 20px;
+  height: 40px;
 }
 #footer {
   background-color: #f5f5f5;

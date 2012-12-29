@@ -7,11 +7,13 @@ var app = angular.module('cceditApp', ['cceditApp.directives', 'ui'])
 .config(function($routeProvider) {
   $routeProvider.
   when('/', {
-    templateUrl: 'partials/home.html'
+    templateUrl: 'partials/home.html',
+    page:'home'
   }).
   when('/project/:projectId', {
     templateUrl: 'partials/project.html',
-    controller:"ProjectCtrl"
+    controller:"ProjectCtrl",
+    page:'project'
   }).
   otherwise({
     redirectTo: '/'

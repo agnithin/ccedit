@@ -58,7 +58,7 @@ module.exports = function(io){
 			    // update list of users in chat, client-side
 			    chat.in(socket.room).emit('updateusers', onlineUsers[socket.room]);
 			    // echo globally that this client has left
-			    socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', socket.username + ' has gone offline');
+			    socket.broadcast.to(socket.room).emit('notify', {type:'info', text: socket.username + ' has gone offline'});
 			}
 		}
 	  });
@@ -73,7 +73,7 @@ module.exports = function(io){
 			    // update list of users in chat, client-side
 			    chat.in(socket.room).emit('updateusers', onlineUsers[socket.room]);
 			    // echo globally that this client has left
-			    socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', socket.username + ' has gone offline');
+			    socket.broadcast.to(socket.room).emit('notify', {type:'info', text: socket.username + ' has gone offline'});
 			}
 		}
 	  });
