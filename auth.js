@@ -1,9 +1,7 @@
-/* Authentication stuff using Passport.js */
-
-module.exports = function(passport, TwitterStrategy, models){
-
-  var TWITTER_CONSUMER_KEY = "q3FrfHhPosxQ05jCDYOdfA";
-  var TWITTER_CONSUMER_SECRET = "4aiKO3a4sSQeElwzpCMlaHGRgtq7Wjb9Gxyw6N9o9w";
+/***************************************************
+* Authentication Functions using Passport.js
+***************************************************/
+module.exports = function(passport, TwitterStrategy, models, environment){
 
   // Passport session setup.
   //   To support persistent login sessions, Passport needs to be able to
@@ -26,9 +24,9 @@ module.exports = function(passport, TwitterStrategy, models){
   //   credentials (in this case, a token, tokenSecret, and Twitter profile), and
   //   invoke a callback with a user object.
   passport.use(new TwitterStrategy({
-      consumerKey: TWITTER_CONSUMER_KEY,
-      consumerSecret: TWITTER_CONSUMER_SECRET,
-      callbackURL: "http://local.ccedit.com:3000/auth/twitter/callback"
+      consumerKey: environment.twitter.consumerKey,
+      consumerSecret: environment.twitter.consumerSecret,
+      callbackURL: environment.twitter.callbackURL
     },
     function(token, tokenSecret, profile, done) {
       /*// asynchronous verification, for effect...
@@ -43,11 +41,11 @@ module.exports = function(passport, TwitterStrategy, models){
       models.User.findOne({provider:'twitter', providerId: profile.id},
         function(err, user) {
           if (!err && user != null) { // returning user
-            console.log("user found");
+            console.log("Returning User");
             models.User.update({"_id": user._id}, { $set: {lastConnected: new Date()} } ).exec();
             done(null, user);
           } else { // firsttime user
-            console.log("first time user");
+            console.log("First Time User");
             var userData = new models.User({
               displayName: profile.displayName,
               provider: profile.provider,
@@ -59,12 +57,11 @@ module.exports = function(passport, TwitterStrategy, models){
 
             userData.save(function(err) {
               if (err){ 
-                console.log("##error saving:" + err);
+                console.log("Error saving User data:" + err);
               }else{ 
-                console.log("Saving User..");
+                console.log("New User saved successfully");
               }
             }); 
-            console.log("Sending User: %j",userData);
             done(null, userData);           
           }     
         }

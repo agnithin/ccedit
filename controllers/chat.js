@@ -1,4 +1,6 @@
-
+/***************************************************
+* WebSocket Chat Controller
+***************************************************/
 module.exports = function(io){
 	
 	// usernames which are currently connected to the chat
@@ -9,24 +11,19 @@ module.exports = function(io){
 	.of('/chat')
 	.on('connection', function (socket) {
 
-	  // when the client emits 'adduser', this listens and executes
-	  socket.on('adduser', function(data){
-	  	
+	  var logInUser = function(data){	  	
 	    // we store the username in the socket session for this client
 	    socket.join(data.projectId);
-	    socket.room=data.projectId;
+	    socket.room = data.projectId;
 	    socket.username = data.username;
 	    // add the client's username to the global list
 	    
-	    console.log("%%%%%%%%%%%%%%%%%%%%%%% adding user to "+socket.room + "\n"+JSON.stringify(onlineUsers[socket.room]));
+	    console.log("%%%%%%%%%%%%%%%%%%%%%%% adding user to " + socket.room + "\n" + JSON.stringify(onlineUsers[socket.room]));
 	    if(!onlineUsers[socket.room]){
 	    	onlineUsers[socket.room] = new Array();
 	    }
 	    if(onlineUsers[socket.room].indexOf(socket.username) == -1){ // if user opens a new tab, dont add username twice
-	    	console.log("%%%%%%%%%%%%%%%%%%%%%%% adding user before\n%j",onlineUsers);
-	    	console.log("socket.room:"+socket.room +" |socket.username:" + socket.username);
 	    	onlineUsers[socket.room].push(socket.username);
-	    	console.log("%%%%%%%%%%%%%%%%%%%%%%% adding user\n%j",onlineUsers[socket.room]);
 
 	    	// echo to client they've connected
 	    	socket.emit('notify', {type:'info', text:'You have successfully connected'});
@@ -34,37 +31,17 @@ module.exports = function(io){
 	    	socket.broadcast.to(socket.room).emit('notify', {type:'info', text:data.username + ' in online'});
 	    	// update the list of users in chat, client-side
 	    	chat.in(socket.room).emit('updateusers', onlineUsers[socket.room]);
-	    }
-	    
-	  });
+	    }	    
+	  };
 
-	  // when the client emits 'sendchat', this listens and executes
-	  socket.on('sendchat', function (data) {
+	  var sendChat = function(data) {
 	    // we tell the client to execute 'updatechat' with 2 parameters
 	    console.log("Message from client:" + data);
 	    //console.log("###" + socket.room + ":" + socket.username + ":" + data);
 	    chat.in(socket.room).emit('updatechat', socket.username, data);
-	  });
+	  };
 
-	  // when the user disconnects.. perform this
-	  socket.on('removeuser', function(){
-	  	console.log("%%%%%%%%%%%%%%%%%%%%%%% signing off\n%j",onlineUsers[socket.room]);
-	  	if(onlineUsers[socket.room] && onlineUsers[socket.room].length>0){
-		  	// remove the username from global usernames list
-		  	var userIndex = onlineUsers[socket.room].indexOf(socket.username);
-		  	console.log("us index:" + userIndex);
-		    if(userIndex != -1){
-			    onlineUsers[socket.room].splice(userIndex, 1);
-			    // update list of users in chat, client-side
-			    chat.in(socket.room).emit('updateusers', onlineUsers[socket.room]);
-			    // echo globally that this client has left
-			    socket.broadcast.to(socket.room).emit('notify', {type:'info', text: socket.username + ' has gone offline'});
-			}
-		}
-	  });
-
-	  // when the user disconnects.. perform this
-	  socket.on('disconnect', function(){
+	  var logOffUser = function(){
 	  	if(onlineUsers[socket.room] && onlineUsers[socket.room].length>0){
 		  	// remove the username from global usernames list
 		    var userIndex = onlineUsers[socket.room].indexOf(socket.username);
@@ -76,6 +53,19 @@ module.exports = function(io){
 			    socket.broadcast.to(socket.room).emit('notify', {type:'info', text: socket.username + ' has gone offline'});
 			}
 		}
-	  });
+	  };
+
+	  // when the client emits 'adduser', this listens and executes
+	  socket.on('adduser', logInUser);
+
+	  // when the client emits 'sendchat', this listens and executes
+	  socket.on('sendchat', sendChat);	  
+
+	  // when user navigates outside the project		
+	  socket.on('removeuser', logOffUser);
+	  
+	  // when the user disconnects.. perform this
+	  socket.on('disconnect', logOffUser);
+
 	});
 };

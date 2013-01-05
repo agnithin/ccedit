@@ -1,8 +1,9 @@
 /**************************
 * Controllers
 **************************/
+
 /** USER CONTROLLER **/
-app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, userSocket, bootbox, notificationService) {
+app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, userSocket, bootbox, notificationService, Page) {
   /*$rootScope.currentUser = user;
 
   userSocket.on('connect', function(){
@@ -13,12 +14,8 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
     $scope.userProjects = projects;
   });*/
 
-  $scope.isProjectPage = function(){
-    if($rootScope.project){
-      return true;
-    }
-    return false;
-  }
+  $scope.page = Page;
+
   userSocket.on('connect', function(){
     userSocket.emit('getUser');
   });
@@ -30,6 +27,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
 
   userSocket.on('refreshProjects', function () {
     userSocket.emit('getProjects', $rootScope.currentUser._id);
+    //TODO if project open then refresh that project
   });
   userSocket.on('getProjects', function (projects) {
     $rootScope.currentUser.projects = projects;
@@ -67,19 +65,11 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
   }
 
   /** ADD COLLABORATOR DIALOG **/
-  $scope.findUserString;// = '';
-  $scope.searchedUsers;// = new Array();
-  $scope.selectedUsers;// = new Array();
+  $scope.findUserString;
+  $scope.searchedUsers;
+  $scope.selectedUsers;
 
   $scope.initializeCollaborators = function(project){
-    /*$scope.selectedUsers = new Array();
-    for(i=0;i<$rootScope.project.users.length;i++){
-      $scope.selectedUsers.push({
-        '_id':$rootScope.project.users[i].userId,
-        'displayName': $rootScope.project.users[i].displayName,
-        'permissions': $rootScope.project.users[i].permissions
-      });
-    }*/
     $scope.selectedUsers = project.users;
     $scope.updatedCollaborators = {add:[], remove:[]};
     $scope.findUserString = '';
@@ -105,18 +95,17 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
         'permissions' : 'rw'
       });
 
-      /*our new logic */
+      /*new logic */
       var userIndexInRemove = getUserIndex($scope.updatedCollaborators.remove, user._id)
       if( userIndexInRemove != -1){ 
         $scope.updatedCollaborators.remove.splice(userIndexInRemove,1);
-      }else{// if user already a collaborator
+      }else{ // if user already a collaborator
         $scope.updatedCollaborators.add.push({
           'userId':user._id,
           'displayName': user.displayName,
           'permissions' : 'rw'
         });
       }
-      /*new logic */
     }
     console.log($scope.updatedCollaborators);
   }
@@ -125,10 +114,8 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
     if(user.userId == $rootScope.currentUser._id){
        bootbox.alert("You cannot remove your self from the project!");
     }else{
-
-      /*our new logic */
+      /* new logic */
       var userIndexInAdd = getUserIndex($scope.updatedCollaborators.add, user.userId); //userId
-      console.log(userIndexInAdd);
       if( userIndexInAdd != -1){ 
         $scope.updatedCollaborators.add.splice(userIndexInAdd, 1);
       }else{// if user already a collaborator
@@ -138,8 +125,6 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
           'permissions' : 'rw'
         });
       }
-      /*new logic */
-      console.log($scope.updatedCollaborators);
 
       var userIndex = getUserIndex($scope.selectedUsers, user.userId);
       if(userIndex!=-1){
@@ -152,12 +137,14 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
     return getUserIndex($scope.selectedUsers, user._id) == -1;
   }
 
+  $scope.isCollaboratorsUpdated = function(){
+    return ($scope.updatedCollaborators
+      && $scope.updatedCollaborators.add.length == 0 
+      && $scope.updatedCollaborators.remove.length == 0);
+  }
+
   $scope.addSelectedUsersToProject = function(project){
     console.log($scope.updatedCollaborators);
-    /*userSocket.emit('addUsersToProject', {
-      'projectId':project._id,
-      'users': $scope.selectedUsers
-    });*/
     userSocket.emit('updateCollaborators', {
       'projectId':project._id,
       'users': $scope.updatedCollaborators
@@ -176,6 +163,10 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
     return userIndex;
   }
 
+  userSocket.on('notify', function (data) {
+    $rootScope.$broadcast('createNotification', data);
+  });
+
   /** NOTIFICATION SERVICE **/
   $scope.$on('createNotification',  function (event, notification){
     console.log("Notification:" + JSON.stringify(notification));
@@ -189,6 +180,10 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
 ****************************/
 app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, projectSocket, bootbox) {
   $rootScope.project = {'_id':$routeParams.projectId, 'name':'New Project'};
+
+  /*projectSocket.socket.on('connect_failed', function (message) { 
+    bootbox.alert("Connection to the Server lost. Please Refresh the page.");
+  });*/
 
   var initializeProject = function(){
     if(projectSocket.isConnected()){
@@ -214,6 +209,20 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
    //projectSocket.disconnect(); 
   });  
 
+  projectSocket.on('connect', function(){
+    console.log("projectSocket connected");
+    projectSocket.emit('getProject', $rootScope.project._id);
+  });  
+
+  projectSocket.on('getProject', function (newProject) {
+    $rootScope.project = newProject;
+    $scope.page.setProjectPage($rootScope.project.name);
+  });
+
+  projectSocket.on('notify', function (data) {
+    $rootScope.$broadcast('createNotification', data);
+  });
+
   $scope.openFile = function(fileId){
     $rootScope.$broadcast('openFile', fileId);
   }
@@ -237,20 +246,6 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
                 });         
   };
   /* TODO delete file push activity required to close file in other window */
-
-  projectSocket.on('connect', function(){
-    console.log("projectSocket connected");
-    projectSocket.emit('getProject', $rootScope.project._id);
-  });  
-
-  projectSocket.on('getProject', function (newProject) {
-    $rootScope.project = newProject;
-  });
-
-  projectSocket.on('notify', function (data) {
-    $rootScope.$broadcast('createNotification', data);
-  });
-
 
   // FILE SEARCH // MOVE THIS TO DIRECTIVES
   $('#file-search').typeahead({
@@ -362,7 +357,6 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
       }      
     }
   }
-
 
   $scope.sendUpdatedFile = function(){
     if($scope.activeFile._id != ''){
@@ -483,6 +477,7 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   $scope.chatNotifications = [];
   $scope.onlineUsers = [];
   $scope.chatText = '';
+  $scope.unreadChatCount = 0;
 
   var initializeChat = function(){
     if(chatSocket.isConnected()){
@@ -529,4 +524,11 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
     chatSocket.emit('sendchat', $scope.chatText);
     $scope.chatText = '';
   }
+});
+
+/****************************
+* HOME CONTROLLER 
+****************************/
+app.controller('HomeCtrl', function($scope, $rootScope) {
+  $scope.page.setHomePage();
 });

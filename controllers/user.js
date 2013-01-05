@@ -1,4 +1,6 @@
-
+/***************************************************
+* WebSocket User Controller
+***************************************************/
 module.exports = function(io, models){
 
 	var userSocket = io
@@ -101,6 +103,7 @@ module.exports = function(io, models){
 			      				  				}else{
 			      				  					console.log("User removed from project");
 			      					  				userSocket.emit('refreshProjects');
+
 			      				  				}
 			      				  			})
 			      				  			console.log("user removed from proj");
@@ -153,59 +156,6 @@ module.exports = function(io, models){
 					});
 				  });
 
-
-			  	/* IMPORTANT REMOVE USERS STILL DOES NOT WORK */
-				/*socket.on('addUsersToProject', function (data) {
-				  	console.log("Adding users to project: %j", data);   
-
-				  	models.Project.findById(data.projectId, function(err, project){
-				  	  	if (project != null) {
-					  	  	project.users = data.users;
-					  	  	project.save(function(err){
-					  	  		if(err){
-					  	  			socket.emit('notify', {type:'danger', text:'Oops! Something went wrong. Could not add users to project.'});
-					  	  		}else{
-					  	  			var usersArray = new Array();
-					  	  			for(i=0;i<data.users.length;i++){
-					  	  				usersArray.push(data.users[i].userId)
-					  	  			}
-					  	  			console.log("## usersArray:%j",usersArray);
-
-					  	  			models.User.find({'_id':{$in:usersArray}}, function(err, users){
-					  	  				console.log("## users:%j",users)
-					  	  				if(!err && users!=null){
-						  	  				users.forEach(function(usr){
-						  	  					console.log("========usr:"+usr.displayName +':' + getProjectIndex(usr.projects, project._id));
-						  	  					console.log("========projectId:"+project._id+"###:%j", usr.projects);
-						  	  					if(getProjectIndex(usr.projects, project._id) == -1){
-							  	  					usr.projects.push({
-							  	  						'projectId':project._id,
-							  	  						'projectName':project.name,
-							  	  						'permissions':project.permissions
-							  	  					});
-							  	  					usr.save(function(err){
-										  				if(err){
-										  					console.log("Error while adding project to user");
-										  				}else{
-										  					socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
-										  					userSocket.emit('refreshProjects');
-									  					}
-									  				});
-							  	  				}
-						  	  				});
-					  	  				}
-					  	  			});
-					  	  		}
-					  	  	});
-
-				  		}else{
-				  			socket.emit('notify', {type:'danger', text:'Oops! Could not locate the project.'});
-				  			console.log('Cannot Find the Project: ' + projectId);
-				  		}
-				  	});
-				});*/
-		   		//=============================================================================
-
 				socket.on('updateCollaborators', function (data) {
 				  	console.log("updating collaborators to project: %j", data);   
 
@@ -228,62 +178,77 @@ module.exports = function(io, models){
 					  	  		if(err){
 					  	  			socket.emit('notify', {type:'danger', text:'Oops! Something went wrong. Could not add users to project.'});
 					  	  		}else{
-					  	  			var usersArray = new Array();
-					  	  			for(i=0;i<data.users.remove.length;i++){
-					  	  				usersArray.push(data.users.remove[i].userId)
-					  	  			}
-					  	  			models.User.find({'_id':{$in:usersArray}}, function(err, users){
-					  	  				console.log("## users:%j",users)
-					  	  				if(!err && users!=null){
-						  	  				users.forEach(function(usr){
-						  	  					console.log("========Del usr:"+usr.displayName +':' + getProjectIndex(usr.projects, project._id));
-						  	  					console.log("========projectId:"+project._id+"###:%j", usr.projects);
-						  	  					var projIndex = getProjectIndex(usr.projects, project._id);
-						  	  					if( projIndex != -1){
-							  	  					usr.projects.splice(projIndex, 1);
-							  	  					usr.save(function(err){
-										  				if(err){
-										  					console.log("Error while removing project from user");
-										  				}else{
-										  					//socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});										  					
-									  					}
-									  				});
-							  	  				}
-						  	  				});
-					  	  				}
-					  	  			});
+					  	  			var updateSuccessfull = true;
+					  	  			if(data.users.remove.length>0){
+						  	  			var usersArray = new Array();
+						  	  			for(i=0;i<data.users.remove.length;i++){
+						  	  				usersArray.push(data.users.remove[i].userId)
+						  	  			}
+						  	  			models.User.find({'_id':{$in:usersArray}}, function(err, users){
+						  	  				console.log("## users:%j",users)
+						  	  				if(!err && users!=null){
+							  	  				users.forEach(function(usr){
+							  	  					console.log("========Del usr:"+usr.displayName +':' + getProjectIndex(usr.projects, project._id));
+							  	  					console.log("========projectId:"+project._id+"###:%j", usr.projects);
+							  	  					var projIndex = getProjectIndex(usr.projects, project._id);
+							  	  					if( projIndex != -1){
+								  	  					usr.projects.splice(projIndex, 1);
+								  	  					usr.save(function(err){
+											  				if(err){
+											  					console.log("Error while removing project from user");
+											  					updateSuccessfull = false;
+											  				}else{
+											  					//socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});										  					
+										  					}
+										  				});
+								  	  				}
+							  	  				});
+						  	  				}else{
+						  	  					updateSuccessfull = false;
+						  	  				}
+						  	  			});
+									}
 									
 									//add users
-									var usersArray = new Array();
-					  	  			for(i=0;i<data.users.remove.length;i++){
-					  	  				usersArray.push(data.users.remove[i].userId)
-					  	  			}					  	  			
-					  	  			models.User.find({'_id':{$in:usersArray}}, function(err, users){
-					  	  				console.log("## users:%j",users)
-					  	  				if(!err && users!=null){
-						  	  				users.forEach(function(usr){
-						  	  					console.log("========Add usr:"+usr.displayName +':' + getProjectIndex(usr.projects, project._id));
-						  	  					console.log("========projectId:"+project._id+"###:%j", usr.projects);
-						  	  					if(getProjectIndex(usr.projects, project._id) == -1){
-							  	  					usr.projects.push({
-							  	  						'projectId':project._id,
-							  	  						'projectName':project.name,
-							  	  						'permissions':project.permissions
-							  	  					});
-							  	  					usr.save(function(err){
-										  				if(err){
-										  					console.log("Error while adding project to user");
-										  				}else{
-										  					//socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
-										  					//userSocket.emit('refreshProjects');
-									  					}
-									  				});
-							  	  				}
-						  	  				});
-					  	  				}
-					  	  			});
-									socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
-									userSocket.emit('refreshProjects');
+									if(data.users.add.length>0){
+										var usersArray = new Array();
+						  	  			for(i=0;i<data.users.add.length;i++){
+						  	  				usersArray.push(data.users.add[i].userId)
+						  	  			}					  	  			
+						  	  			models.User.find({'_id':{$in:usersArray}}, function(err, users){
+						  	  				console.log("## users:%j",users)
+						  	  				if(!err && users!=null){
+							  	  				users.forEach(function(usr){
+							  	  					console.log("========Add usr:"+usr.displayName +':' + getProjectIndex(usr.projects, project._id));
+							  	  					console.log("========projectId:"+project._id+"###:%j", usr.projects);
+							  	  					if(getProjectIndex(usr.projects, project._id) == -1){
+								  	  					usr.projects.push({
+								  	  						'projectId':project._id,
+								  	  						'projectName':project.name,
+								  	  						'permissions':project.permissions
+								  	  					});
+								  	  					usr.save(function(err){
+											  				if(err){
+											  					console.log("Error while adding project to user");
+											  					updateSuccessfull = false;
+											  				}else{
+											  					//socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
+											  					//userSocket.emit('refreshProjects');
+										  					}
+										  				});
+								  	  				}
+							  	  				});
+						  	  				}else{
+						  	  					updateSuccessfull = false;
+						  	  				}
+						  	  			});
+									}
+									if(updateSuccessfull){
+										socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
+										userSocket.emit('refreshProjects');
+									}else{
+										socket.emit('notify', {type:'danger', text:'Oops! Something went wrong. Could not add project to users.'});
+									}
 					  	  		}
 					  	  	});
 
@@ -293,11 +258,8 @@ module.exports = function(io, models){
 				  		}
 				  	});
 				});
-		   		//=============================================================================
 			}
-		 });
-		
-		  
+		 });		  
 
 		var getProjectIndex = function(objectArray, elementId){
 		  var elementIndex = -1;

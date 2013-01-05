@@ -5,7 +5,12 @@ module.exports = function (app, models) {
 	});
 
 	app.get('/login', function(req, res){
-	  res.render('login');
+	  	res.render('login');
+	});
+
+	app.get('/logout', function(req, res){
+	    req.logout();
+	    res.redirect('/');
 	});
 
 	// Simple route middleware to ensure user is authenticated.
@@ -14,8 +19,9 @@ module.exports = function (app, models) {
 	//   the request will proceed.  Otherwise, the user will be redirected to the
 	//   login page.
 	function ensureAuthenticated(req, res, next) {
-	  if (req.isAuthenticated()) { return next(); }
-	  res.redirect('/login')
+	  if (req.isAuthenticated()) { 
+	  	return next(); 
+	  }
+	  res.redirect('/login');
 	}
-
 }

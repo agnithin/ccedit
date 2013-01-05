@@ -18,7 +18,7 @@ module.exports = function(mongoose) {
     backup : [{
             contents : String,
             time : Date,
-            backedupBy : String
+            backedupBy : String // change this to ObjectId
           }]
   });
 

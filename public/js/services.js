@@ -4,6 +4,9 @@
 app.factory('projectSocket', function ($rootScope) {
   var projectSocket = io.connect().of('/project');
   console.log("instantiating projectSocket service");
+  projectSocket.socket.on('connect_failed', function (message) { 
+    console.log("######## Connection Lost");
+  });
   return {
     on: function (eventName, callback) {
       projectSocket.on(eventName, function () {  
@@ -202,6 +205,26 @@ app.factory('codeMirrorMode', function ($rootScope) {
       }else{
         return modes[ext];
       }
+    }
+  };
+});
+
+/***************************************************
+* Simple Page Service to display status of page
+***************************************************/
+app.factory('Page', function(){
+  var title;
+  var isProjectPage = false;
+  return {
+    getTitle: function() { return title; },
+    isProjectPage : function(){ return isProjectPage},
+    setProjectPage : function(projectName){
+      isProjectPage = true;
+      title = projectName;
+    },
+    setHomePage : function(){
+      isProjectPage = false;
+      title = "CC-Edit - Home";
     }
   };
 });

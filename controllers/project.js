@@ -1,4 +1,6 @@
-
+/***************************************************
+* WebSocket Project Controller
+***************************************************/
 module.exports = function(io, models, diff_match_patch){
 	
 	var projectSocket = io
@@ -8,6 +10,7 @@ module.exports = function(io, models, diff_match_patch){
 	console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nproject socket connected");
 	console.log(socket.handshake);
 
+	  // Get details fo a file	
 	  socket.on('getFile', function (fileId) {
 	    console.log("Get File:" + fileId);   
 
@@ -21,6 +24,7 @@ module.exports = function(io, models, diff_match_patch){
 		});
 	  });
 
+	  //Update a file
 	  socket.on('updateFile', function (data) {
 	    console.log("Update File:" + data.id);   
 
@@ -39,6 +43,7 @@ module.exports = function(io, models, diff_match_patch){
 		})
 	  });
 
+	  // Create a new File
 	  socket.on('createFile', function (data) {
 	    console.log("create File:" + data.projectId + " : " +data.fileName);   
 
@@ -63,8 +68,6 @@ module.exports = function(io, models, diff_match_patch){
 		  					}else{
 		  						projectSocket.in(socket.room).emit('getProject',  project);
 		  						projectSocket.in(socket.room).emit('notify', {type:'info', text:newFile.name + ' has been added to project'});
-		  						//socket.emit('notify', {type:'info', text:'New File has been created'});
-		  						//socket.broadcast.to(socket.room).emit('notify', {type:'info', text:newFile.name + ' has been added to project'});
 		  					}
 		  				});
 		  			}
@@ -75,6 +78,7 @@ module.exports = function(io, models, diff_match_patch){
 		});
 	  });
 
+	  // Delete Selected file	
 	  socket.on('deleteFile', function (data) {
 	    console.log("delete File:" + data.projectId + " : " +data.fileId);
 	    models.Project.findById(data.projectId, function(err, project){
@@ -115,6 +119,7 @@ module.exports = function(io, models, diff_match_patch){
 		})
 	  });
 
+	  //Create a backup of file 	
 	  socket.on('backupFile', function (fileId) {
 	    console.log("Backup File:" + fileId);   
 
@@ -149,7 +154,8 @@ module.exports = function(io, models, diff_match_patch){
 			}
 		});
 	  });
-
+		
+	  // Get a list of backups	
 	  socket.on('listBackups', function (fileId) {
 	    console.log("Backup File:" + fileId);   
 
@@ -178,6 +184,7 @@ module.exports = function(io, models, diff_match_patch){
 		});
 	  });
 
+	  // Restore a backup
 	  socket.on('restoreBackup', function (backup) {
 	    console.log("Restoring Backup:" + backup._id);   
 
@@ -225,8 +232,9 @@ module.exports = function(io, models, diff_match_patch){
 		});
 	  });
 
+	  //Delete selected Backup	
 	  socket.on('deleteBackup', function (backup) {
-	    console.log("Deleting Backup:" + backup._id);   
+	    console.log("Deleting Backup:" + backup._id); 
 
 	    models.File.findById(backup.fileId, function(err, foundFile){
 		  	if (!err && foundFile != null) {
@@ -258,7 +266,8 @@ module.exports = function(io, models, diff_match_patch){
 			}
 		});
 	  });	  
-
+	
+	  //Get Project details	
 	  socket.on('getProject', function (projectId) {
 	    console.log("Get Project:" + projectId);   
 
@@ -275,9 +284,9 @@ module.exports = function(io, models, diff_match_patch){
 		});
 	  });
 
+	  // send cursor changes to all clients
 	  socket.on('updateCursor', function (data) {
-	    console.log("Update Cursor:%j", data);   
-
+	    console.log("Update Cursor:%j", data);
 	    socket.broadcast.to(socket.room).emit('updateCursor',  data);
 	  });	  
 
@@ -285,7 +294,7 @@ module.exports = function(io, models, diff_match_patch){
 	    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nclient disconnected");
 	  });
 
-	  function diff_launch(text1, text2) {
+	  var diff_launch = function(text1, text2) {
 		var dmp = new diff_match_patch.diff_match_patch();
 		var diff = dmp.diff_main(text1, text2, true);
 		if (diff.length > 2) {

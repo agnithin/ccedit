@@ -116,7 +116,8 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
         cursorEl.className = 'blink';
         cursorEl.style.borderLeftWidth = '2px';
         cursorEl.style.borderLeftStyle = 'solid';
-        cursorEl.rel="tooltip";
+        //cursorEl.rel="tooltip";
+        cursorEl.uiJq="tooltip";
         cursorEl.title=data.user.displayName;
         cursorEl.innerHTML = '&nbsp;';
         cursorEl.style.borderLeftColor = color;

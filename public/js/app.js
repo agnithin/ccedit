@@ -8,6 +8,7 @@ var app = angular.module('cceditApp', ['cceditApp.directives', 'ui'])
   $routeProvider.
   when('/', {
     templateUrl: 'partials/home.html',
+    controller:"HomeCtrl",
     page:'home'
   }).
   when('/project/:projectId', {

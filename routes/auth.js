@@ -1,7 +1,6 @@
 
 module.exports = function (app, passport, models) {
 
-/* --- passport --- */
   // GET /auth/twitter
   //   Use passport.authenticate() as route middleware to authenticate the
   //   request.  The first step in Twitter authentication will involve redirecting
@@ -25,11 +24,6 @@ module.exports = function (app, passport, models) {
       res.redirect('/');
     });
 
-  app.get('/logout', function(req, res){
-    req.logout();
-    res.redirect('/');
-  });
-
   /** IMPORTANT! - REMOVE THIS CODE **/
   app.get('/auth/backdoor/:id', function(req, res){
     models.User.findOne({provider:'twitter', providerUsername: req.params.id},
@@ -43,7 +37,7 @@ module.exports = function (app, passport, models) {
           });
           res.redirect('/');
         }else{
-          console.log("BACKDOOR: Error finding user in routes/auth.js");          
+          console.log("BACKDOOR: Error finding user in routes/auth.js");         
         }
     });
   });

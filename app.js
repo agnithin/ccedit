@@ -10,25 +10,22 @@ var express = require('express'),
     passport = require('passport'),
     TwitterStrategy = require('passport-twitter').Strategy;
 
-var MemoryStore = express.session.MemoryStore,
-	sessionStore = new MemoryStore(),
-	sessionSecret = "blue_frog",
-	sessionKey = 'connect.sid',
-  cookieParser = express.cookieParser(sessionSecret); 
-
 var environment = require('./environment.js'),
     service = require('./service.js');
 service.init(environment);
+
+var MemoryStore = express.session.MemoryStore,
+	sessionStore = new MemoryStore();
 
 var models = {};
 models.User = service.useModel('user');
 models.Project = service.useModel('project');
 models.File = service.useModel('file');
 
-require('./auth.js')(passport, TwitterStrategy, models);
+require('./auth')(passport, TwitterStrategy, models, environment);
 
 var app = express();
-require('./configuration')(app, express, path, passport, sessionStore, sessionKey, sessionSecret);
+require('./configuration')(app, express, path, passport, environment, sessionStore, environment.session.key, environment.session.secret);
 
 // include routes
 require('./routes/index')(app, models)
@@ -42,11 +39,11 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 var io = require('socket.io').listen(server);
 
 io.set('authorization', function(data, accept) {
-  cookieParser(data, {}, function(err) {
+  express.cookieParser(environment.session.secret)(data, {}, function(err) {
     if (err) {
       accept(err, false);
     } else {
-      sessionStore.get(data.signedCookies[sessionKey], function(err, session) {
+      sessionStore.get(data.signedCookies[environment.session.key], function(err, session) {
         if (err || !session) {
           accept('Session error', false);
         } else {
@@ -58,6 +55,6 @@ io.set('authorization', function(data, accept) {
   });
 });
 
-require('./controllers/userController.js')(io, models);
-require('./controllers/chatController.js')(io);
-require('./controllers/projectController.js')(io, models, diff_match_patch);
+require('./controllers/user.js')(io, models);
+require('./controllers/chat.js')(io);
+require('./controllers/project.js')(io, models, diff_match_patch);

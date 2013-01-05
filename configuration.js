@@ -1,7 +1,10 @@
-module.exports = function(app, express, path, passport, sessionStore, sessionKey, sessionSecret){
+/***************************************************
+* Express server configuration
+***************************************************/
+module.exports = function(app, express, path, passport, environment, sessionStore, sessionKey, sessionSecret){
 
 	app.configure(function(){
-	  app.set('port', process.env.PORT || 3000);
+	  app.set('port', process.env.PORT || environment.port);
 	  app.set('views', __dirname + '/views');
 	  app.set('view engine', 'ejs');
 	  app.use(express.favicon());

@@ -8,12 +8,12 @@
               <div class="well sidebar-nav">
                 <ul id="project-files" class="nav nav-list">
                   <li class="nav-header">
-                    Files <button class="close" type="button" ng-click="showAddFile()" rel="tooltip" title="Add a new file">+</button>
+                    Files <button class="close" type="button" ng-click="showAddFile()" ui-jq="tooltip" title="Add a new file">+</button>
                   </li>
                   <!--<li class="active"><a href="#">Sample file</a></li>-->                  
                   <li ng-repeat="file in project.files" class="project-file">
                     <a ng-click="openFile(file.fileId)" >{{file.fileName}}</a>              
-                    <button class="close" ng-click="deleteFile(file.fileId, file.fileName)" rel="tooltip" title="Delete file">
+                    <button class="close" ng-click="deleteFile(file.fileId, file.fileName)" ui-jq="tooltip" title="Delete file">
                       <i class="icon-trash"></i>
                     </button>                                      
                   </li>
@@ -86,8 +86,8 @@
                     Selected Backup: <span class="pager"><a href="#">{{selectedBackup.time}}</a></span> -->             
                 </div>
                 <div class="modal-footer">                  
-                  <button class="btn btn-danger" ng-disabled="selectedBackup==''" ng-class="{disabled: selectedBackup==''}" ng-click="deleteBackup()">Delete Selected Backup</button>
-                  <button class="btn btn-primary" data-dismiss="modal" ng-disabled="selectedBackup==''" ng-class="{disabled: selectedBackup==''}" ng-click="restoreBackup()">Restore Selected Backup</button>
+                  <button class="btn btn-danger" ng-disabled="selectedBackup==''" ng-click="deleteBackup()">Delete Selected Backup</button>
+                  <button class="btn btn-primary" data-dismiss="modal" ng-disabled="selectedBackup==''" ng-click="restoreBackup()">Restore Selected Backup</button>
                   <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
                 </div>
               </div><!-- /LIST BACKUPS DIALOG -->
@@ -96,7 +96,7 @@
 
             <!-- ### CHAT AREA ### -->
             <div class="span3 visible-desktop" id="ccedit-chat" ng-controller="ChatCtrl">
-              <div id="chat-header" class="popover-title">CHAT<span class="icon-chevron-down pull-right"></span></div>        
+              <div id="chat-header" class="popover-title">CHAT<span id="unread-chat" class="badge badge-important" ng-show="unreadChatCount>0">{{unreadChatCount}}</span><span class="icon-chevron-down pull-right"></span></div>        
               <div id="chat-content" class="well sidebar-nav">
                 <ul id="online-users" class="nav nav-list">
                   <li class="nav-header">Online Users</li>
@@ -118,10 +118,10 @@
           </div><!--/row-->      
 
           </div> <!-- /PAGE BODY -->
-        <script>
-        $("#chat-header").click(function(){
-            $("#chat-content").slideToggle();
-            return false;
-         });
-        //$("#chat-messages").animate({ scrollTop: $("#chat-messages").attr("scrollHeight") }, 3000)
-        </script>
+          <script>
+          $("#chat-header").click(function(){
+              $("#chat-content").slideToggle();
+              return false;
+           });
+          //$("#chat-messages").animate({ scrollTop: $("#chat-messages").attr("scrollHeight") }, 3000)
+          </script>
