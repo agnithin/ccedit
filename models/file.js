@@ -12,13 +12,22 @@ module.exports = function(mongoose) {
     name : {type: String, required: true},
     contents : String,
     createdOn : Date,
-    createdBy : ObjectId,
+    createdBy : {
+      userId: ObjectId,
+      displayName : String
+    },
     modifiedOn : Date,
-    modifiedBy : String, // change this to ObjectId
+    modifiedBy : {
+      userId: ObjectId,
+      displayName : String
+    },
     backup : [{
             contents : String,
             time : Date,
-            backedupBy : String // change this to ObjectId
+            backedupBy : {
+              userId: ObjectId,
+              displayName : String
+            } 
           }]
   });
 

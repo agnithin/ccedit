@@ -27,6 +27,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
 
   userSocket.on('refreshProjects', function () {
     userSocket.emit('getProjects', $rootScope.currentUser._id);
+    //$rootScope.$broadcast('initializeWorkspace');
     //TODO if project open then refresh that project
   });
   userSocket.on('getProjects', function (projects) {
@@ -35,8 +36,8 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
 
   $scope.deleteProject = function(project){
     bootbox.confirm("<b>Are you sure you want to delete "+project.projectName+"?</b>" 
-      + "<br><br>WARNING: If you are the only collaborator of the project, the project and all its files would deleted." 
-      + " If there are other collaborators, the project will remain, but you wont have access to it."
+      + "<br><br>NOTE: If you are the only collaborator of the project, the project and all its files will be deleted from the server." 
+      + " If there are other collaborators, the project will remain on the server, but you will be removed from the collaborators list."
       , function(confirmed) {
                     if(confirmed){
                       userSocket.emit('deleteProject', {
@@ -196,8 +197,9 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
   if($rootScope.currentUser){
     initializeProject();
   }
+
   $rootScope.$on('initializeWorkspace', function(){
-    initializeProject();
+    //initializeProject();
   });
 
   $scope.newFileName;
@@ -219,11 +221,16 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
     $scope.page.setProjectPage($rootScope.project.name);
   });
 
+  projectSocket.on('refreshProject', function () {
+    $projectSocket.emit('getProject', $rootScope.project._id);
+  });
+
   projectSocket.on('notify', function (data) {
     $rootScope.$broadcast('createNotification', data);
   });
 
   $scope.openFile = function(fileId){
+    console.log("openfile:" + fileId);
     $rootScope.$broadcast('openFile', fileId);
   }
 
@@ -265,8 +272,10 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
           process(return_list);                 
       },
       updater: function(item) {
-        $scope.openFile(map[item].id);
-        return item;
+        $rootScope.$apply(function () {
+          $scope.openFile(map[item].id);
+        });
+        return "";
       }
   });
 
@@ -478,7 +487,14 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   $scope.onlineUsers = [];
   $scope.chatText = '';
   $scope.unreadChatCount = 0;
+  $scope.showChat = true;
 
+  $scope.toggleChat = function(){
+    $scope.showChat = !($scope.showChat);
+    if($scope.showChat){
+      $scope.unreadChatCount = 0;
+    }
+  }
   var initializeChat = function(){
     if(chatSocket.isConnected()){
       chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
@@ -509,6 +525,12 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   // listener, whenever the server emits 'updatechat', this updates the chat body
   chatSocket.on('updatechat', function (username, data) {
     $scope.chatLog.push({'username': username, 'data' : data});
+    if(!$scope.showChat){
+      $scope.unreadChatCount++;
+    }
+    
+    //ugly fix to keep scroll at bottom; move to directive
+    $("#chat-messages").scrollTop($("#chat-messages")[0].scrollHeight)
   }); 
 
   // listener, whenever the server emits 'updateusers', this updates the username list

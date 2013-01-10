@@ -12,9 +12,9 @@ module.exports = function(mongoose) {
     providerId : {type: String, required: true},
     providerUsername : String,
     profilePicture : String,
-    email: String,
+    email : String,
     lastConnected : Date,
-    projects:{ 
+    projects : { 
       type : [{
         projectId : ObjectId, 
         projectName : String,
@@ -24,6 +24,10 @@ module.exports = function(mongoose) {
       }] 
     }
   });
+
+  /*UserSchema.methods.addProject = function(date, hours) {
+    this.performedWork.push(new PerformedWork({ date: date, hours: hours }));
+  };*/
 
   return mongoose.model('User', UserSchema);
 }

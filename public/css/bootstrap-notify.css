@@ -16,6 +16,7 @@
 .notifications.bottom-left {
   left: 10px;
   bottom: 40px;
+  z-index:100;
 }
 
 .notifications.bottom-right {

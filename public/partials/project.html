@@ -79,7 +79,7 @@
                       </tr>
                       <tr ng-repeat="backup in backupList" ng-click="selectBackup(backup)" ng-class="{success: isSelectedBackup(backup)}">
                         <td>{{backup.time}}</td>
-                        <td>{{backup.backedupBy}}</td>
+                        <td>{{backup.backedupBy.displayName}}</td>
                       </tr>
                     </table>
                     <!--<hr>
@@ -96,20 +96,22 @@
 
             <!-- ### CHAT AREA ### -->
             <div class="span3 visible-desktop" id="ccedit-chat" ng-controller="ChatCtrl">
-              <div id="chat-header" class="popover-title">CHAT<span id="unread-chat" class="badge badge-important" ng-show="unreadChatCount>0">{{unreadChatCount}}</span><span class="icon-chevron-down pull-right"></span></div>        
-              <div id="chat-content" class="well sidebar-nav">
+              <div id="chat-header" class="popover-title" ng-click="toggleChat()">CHAT<span id="unread-chat" class="badge badge-important" ng-show="unreadChatCount>0">{{unreadChatCount}}</span><span class="pull-right" ng-class="{'icon-chevron-down' : showChat, 'icon-chevron-up' : !showChat}"></span></div>        
+              <div id="chat-content" class="well sidebar-nav" ui-hide="!showChat">
                 <ul id="online-users" class="nav nav-list">
                   <li class="nav-header">Online Users</li>
                   <li ng-repeat="user in onlineUsers">{{user}}</li>
                 </ul>
                 <hr>
-                <ul id="chat-messages" class="nav nav-list">
+                <ul class="nav nav-list">
                   <li class="nav-header">Chat</li>
+                </ul> 
+                <ul id="chat-messages" class="nav nav-list" scroll-bottom>
                   <li id="messages" ng-repeat="log in chatLog">
                     <b>{{log.username}}:</b> {{log.data}}
                   </li>
                 </ul>   
-                <textarea id="chat-text" rows="2" ng-model='chatText' ui-keypress="{13:'sendChat()'}" class="input-small-modified"></textarea>             
+                <textarea id="chat-text" rows="2" ng-model='chatText' ui-keypress="{13:'sendChat()'}" class="input-small-modified" ></textarea>             
               </div><!-- /CHAT BAR -->
               
 
@@ -119,9 +121,9 @@
 
           </div> <!-- /PAGE BODY -->
           <script>
-          $("#chat-header").click(function(){
+          /*$("#chat-header").click(function(){
               $("#chat-content").slideToggle();
               return false;
-           });
+           });*/
           //$("#chat-messages").animate({ scrollTop: $("#chat-messages").attr("scrollHeight") }, 3000)
           </script>

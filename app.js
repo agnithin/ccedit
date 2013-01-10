@@ -1,6 +1,8 @@
-/**
- * Module dependencies.
- */
+/***************************************************
+* Main Node.js App
+***************************************************/
+
+//Module dependencies
 var express = require('express'),
     routes = require('./routes'),
     http = require('http'),
@@ -56,5 +58,5 @@ io.set('authorization', function(data, accept) {
 });
 
 require('./controllers/user.js')(io, models);
-require('./controllers/chat.js')(io);
+require('./controllers/chat.js')(io, models);
 require('./controllers/project.js')(io, models, diff_match_patch);

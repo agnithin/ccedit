@@ -25,6 +25,27 @@ angular.module('cceditApp.directives', [])
 });
 
 /**
+ * Directive to scroll on particular element
+ */
+/*angular.module('cceditApp.directives', [])
+.directive('scrollBottom', function($window) {
+  return function(scope, element, attrs) {
+    
+    scope.$watch(element.change(), function( newval ) {  
+      console.log("######## change");
+      console.log(element);
+      var windowEl = angular.element($window);
+      windowEl.on('scroll', function() {
+        scope.$apply(function() {
+          //scope[attrs.scrollPosition] = windowEl.scrollTop();
+          element.scrollTop = element.scrollHeight;
+        });
+      });
+    });
+  };
+});*/
+
+/**
  * CodeMirror Directive: to include CodeMirror editor
  * Original source is from AngularUI. Modified to add multiple cursors.
  * Binds a CodeMirror widget to a <textarea> element.
@@ -117,7 +138,7 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
         cursorEl.style.borderLeftWidth = '2px';
         cursorEl.style.borderLeftStyle = 'solid';
         //cursorEl.rel="tooltip";
-        cursorEl.uiJq="tooltip";
+        cursorEl.setAttribute('ui-jq', "tooltip");
         cursorEl.title=data.user.displayName;
         cursorEl.innerHTML = '&nbsp;';
         cursorEl.style.borderLeftColor = color;

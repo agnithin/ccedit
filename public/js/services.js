@@ -1,6 +1,30 @@
 /***************************************************
 * WebSocket service for Project, Chat and User
 ***************************************************/
+app.factory('userSocket', function ($rootScope) {
+  var chatSocket = io.connect().of('/user');
+  return {
+    on: function (eventName, callback) {
+      chatSocket.on(eventName, function () {  
+        var args = arguments;
+        $rootScope.$apply(function () {
+          callback.apply(chatSocket, args);
+        });
+      });
+    },
+    emit: function (eventName, data, callback) {
+      chatSocket.emit(eventName, data, function () {
+        var args = arguments;
+        $rootScope.$apply(function () {
+          if (callback) {
+            callback.apply(chatSocket, args);
+          }
+        });
+      })
+    }
+  };
+});
+
 app.factory('projectSocket', function ($rootScope) {
   var projectSocket = io.connect().of('/project');
   console.log("instantiating projectSocket service");
@@ -78,30 +102,6 @@ app.factory('chatSocket', function ($rootScope) {
     },
     removeAllListeners : function(){
       chatSocket.removeAllListeners();
-    }
-  };
-});
-
-app.factory('userSocket', function ($rootScope) {
-  var chatSocket = io.connect().of('/user');
-  return {
-    on: function (eventName, callback) {
-      chatSocket.on(eventName, function () {  
-        var args = arguments;
-        $rootScope.$apply(function () {
-          callback.apply(chatSocket, args);
-        });
-      });
-    },
-    emit: function (eventName, data, callback) {
-      chatSocket.emit(eventName, data, function () {
-        var args = arguments;
-        $rootScope.$apply(function () {
-          if (callback) {
-            callback.apply(chatSocket, args);
-          }
-        });
-      })
     }
   };
 });
