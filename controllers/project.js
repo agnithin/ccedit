@@ -1,6 +1,9 @@
 /***************************************************
 * WebSocket Project Controller
 ***************************************************/
+
+MAX_FILE_BACKUPS_PER_USER=5;
+
 module.exports = function(io, models, diff_match_patch){
 	
 	var projectSocket = io
@@ -164,31 +167,35 @@ module.exports = function(io, models, diff_match_patch){
 
 			    models.File.findById(fileId, function(err, foundFile){
 				  	if (foundFile != null) {
-				  		var currentBackup = {
-					  		contents : foundFile.contents,
-					  		time : Date.now(),
-					  		backedupBy : {
-					  			userId: user._id,
-					  			displayName: user.displayName
-					  		}
-					  	};
+				  		if(foundFile.countBackupsByUser(user._id) >= MAX_FILE_BACKUPS_PER_USER){
+				  			socket.emit('notify', {type:'danger', text:'You have exceeded your Maximum allocated backups. Delete one of your backups to continue.'});
+				  		}else{
+					  		var currentBackup = {
+						  		contents : foundFile.contents,
+						  		time : Date.now(),
+						  		backedupBy : {
+						  			userId: user._id,
+						  			displayName: user.displayName
+						  		}
+						  	};
 
-					  	if(!foundFile.backup){
-					  		foundFile.backup = new Array();
+						  	if(!foundFile.backup){
+						  		foundFile.backup = new Array();
+						  	}
+						  	foundFile.backup.push(currentBackup);
+
+					  		/*if(foundFile.backup.length>5){ // keep only 5 backup at a time
+					  			foundFile.backup.splice(0,1);
+					  		}*/
+
+					  		foundFile.save(function(err){
+					  			if(!err){
+					  				socket.emit('notify', {type:'info', text:'File backed-up successfully.'});
+					  			}else{
+					  				socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not backup the file.'});
+					  			}
+					  		});
 					  	}
-					  	foundFile.backup.push(currentBackup);
-
-				  		if(foundFile.backup.length>5){ // keep only 5 backup at a time
-				  			foundFile.backup.splice(0,1);
-				  		}
-
-				  		foundFile.save(function(err){
-				  			if(!err){
-				  				socket.emit('notify', {type:'info', text:'File backed-up successfully.'});
-				  			}else{
-				  				socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not backup the file.'});
-				  			}
-				  		});
 
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not backup the file.'});

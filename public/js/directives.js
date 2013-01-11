@@ -93,7 +93,6 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
                 });
             });
         }
-        //$rootScope.codeMirror = codeMirror;
         
         for (var i = 0, n = events.length, aEvent; i < n; ++i) {
           aEvent = opts["on" + events[i].charAt(0).toUpperCase() + events[i].slice(1)];
@@ -123,6 +122,8 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
 
       };
 
+      // Communicating with controllers using broadcast events
+      // probably not the best way to do
       $rootScope.$on('updateOthersCursor', function(event, data){
         //remove prev location of cursor
         angular.forEach(othersCursorElements, function(othersCursor){

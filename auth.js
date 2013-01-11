@@ -1,6 +1,7 @@
 /***************************************************
 * Authentication Functions using Passport.js
 ***************************************************/
+
 module.exports = function(passport, TwitterStrategy, models, environment){
 
   // Passport session setup.

@@ -31,5 +31,15 @@ module.exports = function(mongoose) {
           }]
   });
 
+  FileSchema.methods.countBackupsByUser = function(userId) {
+    var backupsByUser = 0;
+    this.backup.forEach(function(backup){
+      if(backup.backedupBy.userId.equals(userId)){
+        backupsByUser++;
+      }
+    });
+    return backupsByUser;
+  };
+
   return mongoose.model('File', FileSchema);
 }

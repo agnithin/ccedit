@@ -67,17 +67,12 @@ http://css.dzone.com/articles/oauth-authentication
 
 dan suggestions:
 file history: list of recently edited files
-remove backup selectively
 in chat show the lin numbers being edited
 
-report
-issues faced
 
 angular+socketio
 https://github.com/phillro/angular-socket-event-handler
 https://gist.github.com/2974075
-
-
 
 
 angularjs

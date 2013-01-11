@@ -1,6 +1,7 @@
 /***************************************************
 * Express server configuration
 ***************************************************/
+
 module.exports = function(app, express, path, passport, environment, sessionStore, sessionKey, sessionSecret){
 
 	app.configure(function(){
