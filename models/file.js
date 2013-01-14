@@ -41,5 +41,17 @@ module.exports = function(mongoose) {
     return backupsByUser;
   };
 
+  FileSchema.methods.deleteBackupsByUser = function(userId) {
+    var backupsByUser = 0;
+    for(i=0; i<this.backup.length; i++){
+      console.log("====" + this.backup[i].backedupBy.userId + " | " + userId);
+      if(this.backup[i].backedupBy.userId.equals(userId)){
+        this.backup.splice(i, 1);
+        i--;
+      }
+    }
+    console.log(this.backup);
+  };
+
   return mongoose.model('File', FileSchema);
 }

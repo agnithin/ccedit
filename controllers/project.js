@@ -249,9 +249,11 @@ module.exports = function(io, models, diff_match_patch){
 				  			}
 				  			console.log("selected backup found at:" + i);
 				  			if(i<foundFile.backup.length){
+				  				/*
+				  				// remove all the later backups
 				  				if(i+1<foundFile.backup.length){
-				  					foundFile.backup.splice(i+1); // remove all the later backups
-				  				}
+				  					foundFile.backup.splice(i+1); 
+				  				}*/
 				  				var contentsBeforeRestore = foundFile.contents;
 				  				foundFile.contents = foundFile.backup[i].contents;
 				  				foundFile.modifiedBy = "userid";

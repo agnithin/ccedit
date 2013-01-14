@@ -86,7 +86,7 @@
                     Selected Backup: <span class="pager"><a href="#">{{selectedBackup.time}}</a></span> -->             
                 </div>
                 <div class="modal-footer">                  
-                  <button class="btn btn-danger" ng-disabled="selectedBackup==''" ng-click="deleteBackup()">Delete Selected Backup</button>
+                  <button class="btn btn-danger" ng-disabled="selectedBackup=='' || selectedBackup.backedupBy.userId != currentUser._id" ng-click="deleteBackup()">Delete Selected Backup</button>
                   <button class="btn btn-primary" data-dismiss="modal" ng-disabled="selectedBackup==''" ng-click="restoreBackup()">Restore Selected Backup</button>
                   <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
                 </div>

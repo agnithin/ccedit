@@ -149,6 +149,20 @@ module.exports = function(io, models){
 				  	  			if(userIndex != -1){
 				  	  				project.users.splice(userIndex, 1);
 				  	  			}
+
+				  	  			// remove backups created by that collaborator
+				  	  			var filesArray = new Array();
+				  	  			for(i=0;i<project.files.length;i++){
+				  	  				filesArray.push(project.files[i].fileId);
+				  	  			}
+				  	  			console.log("********");
+				  	  			console.log(filesArray);
+				  	  			models.File.find({'_id':{$in:filesArray}}, function(err, files){
+				  	  				files.forEach(function(file){
+				  	  					file.deleteBackupsByUser(usr.userId);
+				  	  					file.save();
+				  	  				});
+				  	  			});
 				  	  		});
 				  	  		//add users to proj
 				  	  		data.users.add.forEach(function(usr){

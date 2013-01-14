@@ -52,7 +52,7 @@
                   <li><a href="#addCollabModal" ng-show="page.isProjectPage()" data-toggle="modal" ng-click="initializeCollaborators(project)">Add Collaborators</a></li>
                   <li ng-show="page.isProjectPage()">
                     <form class="navbar-search pull-left">
-                      <input type="text" id="file-search" data-provide="typeahead" ng-model="searchProject" class="search-query" placeholder="Search Project Files" ui-reset>
+                      <input type="text" id="file-search" data-provide="typeahead" ng-model="searchProject" class="search-query" placeholder="Search Project Filenames" ui-reset>
                     </form>
                   </li>
                 </ul>            
@@ -136,7 +136,7 @@
         <script src="/js/vendor/angular.min.js"></script>
         <script src="/js/vendor/angular-ui.min.js"></script>
 
-        <!-- TODO: When running in production, combine all below js into single file and minify -->
+        <!-- TODO: When running in production, combine all js below into single file and minify -->
         <script src="/js/app.js"></script>
         <script src="/js/services.js"></script>
         <script src="/js/controllers/user.js"></script>
