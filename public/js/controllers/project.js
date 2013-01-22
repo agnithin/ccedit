@@ -8,6 +8,7 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
     bootbox.alert("Connection to the Server lost. Please Refresh the page.");
   });*/
 
+  /* initialize project */
   var initializeProject = function(){
     if(projectSocket.isConnected()){
       projectSocket.emit('getProject', $rootScope.project._id);
@@ -51,29 +52,34 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
     $rootScope.$broadcast('createNotification', data);
   });
 
+  /* send open file action to file controller */
   $scope.openFile = function(fileId){
     console.log("openfile:" + fileId);
     $rootScope.$broadcast('openFile', fileId);
   }
 
+  /* create a new file */
   $scope.addFile = function(){
    projectSocket.emit('createFile', {'projectId':$rootScope.project._id, 'fileName':$scope.newFileName});
    $scope.newFileName = '';
    $scope.showAddNewFileTextbox = false;
   };
 
+  /* show for to enter new file name */
   $scope.showAddFile = function(){
     $scope.showAddNewFileTextbox = !$scope.showAddNewFileTextbox;    
   }
 
+  /* delete selected file */
   $scope.deleteFile = function(fileId, fileName){    
-    bootbox.confirm("Are you sure you want to delete "+fileName+"?", function(confirmed) {
+    bootbox.confirm("Are you sure you want to delete "+encodeHTML(fileName)+" ?", function(confirmed) {
                     if(confirmed){
                       $rootScope.$broadcast('closeFile', fileId);
                       projectSocket.emit('deleteFile', {'projectId':$rootScope.project._id, 'fileId':fileId});
                     }
                 });         
   };
+
   /* TODO delete file push activity required to close file in other window */
 
   // FILE SEARCH // MOVE THIS TO DIRECTIVES
@@ -100,5 +106,10 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
         return "";
       }
   });
+
+  /* sanitise filenames */
+  function encodeHTML(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  }
 
 });

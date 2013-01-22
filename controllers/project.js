@@ -14,7 +14,7 @@ module.exports = function(io, models, diff_match_patch){
 		models.User.findById(socket.handshake.session.passport.user, function(err, user) {
 		   if(!err && user!=null){
 
-		   		//Get Project details	
+		   	  /* Get Project details	*/
 			  socket.on('getProject', function (projectId) {
 			    console.log("Get Project:" + projectId);   
 
@@ -36,7 +36,7 @@ module.exports = function(io, models, diff_match_patch){
 				});
 			  });
 
-			  // Get details fo a file	
+			  /* Get details fo a file	*/
 			  socket.on('getFile', function (fileId) {
 			    console.log("Get File:" + fileId);   
 
@@ -50,7 +50,7 @@ module.exports = function(io, models, diff_match_patch){
 				});
 			  });
 
-			  //Update a file
+			  /* Update a file */
 			  socket.on('updateFile', function (data) {
 			    console.log("Update File:" + data.id);   
 
@@ -74,7 +74,7 @@ module.exports = function(io, models, diff_match_patch){
 				})
 			  });
 
-			  // Create a new File
+			  /* Create a new File */
 			  socket.on('createFile', function (data) {
 			    console.log("create File:" + data.projectId + " : " +data.fileName);   
 
@@ -117,7 +117,7 @@ module.exports = function(io, models, diff_match_patch){
 				});
 			  });
 
-			  // Delete Selected file	
+			  /* Delete Selected file	*/
 			  socket.on('deleteFile', function (data) {
 			    console.log("delete File:" + data.projectId + " : " +data.fileId);
 			    models.Project.findById(data.projectId, function(err, project){
@@ -161,14 +161,14 @@ module.exports = function(io, models, diff_match_patch){
 				})
 			  });
 
-			  //Create a backup of file 	
+			  /* Create a backup of file 	*/
 			  socket.on('backupFile', function (fileId) {
 			    console.log("Backup File:" + fileId);   
 
 			    models.File.findById(fileId, function(err, foundFile){
 				  	if (foundFile != null) {
 				  		if(foundFile.countBackupsByUser(user._id) >= MAX_FILE_BACKUPS_PER_USER){
-				  			socket.emit('notify', {type:'danger', text:'You have exceeded your Maximum allocated backups. Delete one of your backups to continue.'});
+				  			socket.emit('notify', {type:'danger', text:'You have exceeded your maximum allocated backups for this file. Delete one of your old backups to continue.'});
 				  		}else{
 					  		var currentBackup = {
 						  		contents : foundFile.contents,
@@ -204,7 +204,7 @@ module.exports = function(io, models, diff_match_patch){
 				});
 			  });
 				
-			  // Get a list of backups	
+			  /* Get a list of backups	*/
 			  socket.on('listBackups', function (fileId) {
 			    console.log("Backup File:" + fileId);   
 
@@ -233,7 +233,7 @@ module.exports = function(io, models, diff_match_patch){
 				});
 			  });
 
-			  // Restore a backup
+			  /* Restore a backup  */
 			  socket.on('restoreBackup', function (backup) {
 			    console.log("Restoring Backup:" + backup._id);   
 
@@ -283,7 +283,7 @@ module.exports = function(io, models, diff_match_patch){
 				});
 			  });
 
-			  //Delete selected Backup	
+			  /* Delete selected Backup	*/
 			  socket.on('deleteBackup', function (backup) {
 			    console.log("Deleting Backup:" + backup._id); 
 
@@ -320,7 +320,7 @@ module.exports = function(io, models, diff_match_patch){
 				});
 			  });			  
 
-			  // send cursor changes to all clients
+			  /* send cursor changes to all clients */
 			  socket.on('updateCursor', function (data) {
 			    console.log("Update Cursor:%j", data);
 			    socket.broadcast.to(socket.room).emit('updateCursor',  data);
@@ -330,6 +330,7 @@ module.exports = function(io, models, diff_match_patch){
 			    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nclient disconnected");
 			  });
 
+			  /* apply patch to text */
 			  var diff_launch = function(text1, text2) {
 				var dmp = new diff_match_patch.diff_match_patch();
 				var diff = dmp.diff_main(text1, text2, true);

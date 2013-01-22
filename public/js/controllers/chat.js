@@ -11,15 +11,20 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   $scope.unreadChatCount = 0;
   $scope.showChat = true;
 
+  /* hide/popup chat sidebar */
   $scope.toggleChat = function(){
     $scope.showChat = !($scope.showChat);
     if($scope.showChat){
       $scope.unreadChatCount = 0;
     }
   }
+
+  /* initialize chat */
   var initializeChat = function(){
     if(chatSocket.isConnected()){
       chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
+    }else{
+      chatSocket.connect();
     }
   };
 
@@ -39,10 +44,13 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   });
 
   // on connection to server, ask for user's name with an anonymous callback
-  /*chatSocket.on('connect', function(){
+  chatSocket.on('connect', function(){
     // call the server-side function 'adduser' and send one parameter (value of prompt)
-    chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
-  });*/
+    setTimeout(function(){ // ugly hack : wait 1 sec for the user controller to get initialized
+      chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
+    }, 1000);
+    
+  });
 
   // listener, whenever the server emits 'updatechat', this updates the chat body
   chatSocket.on('updatechat', function (username, data) {
@@ -64,6 +72,7 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
     $rootScope.$broadcast('createNotification', data);
   });
 
+  /* send chat text to server */
   $scope.sendChat = function(){
     chatSocket.emit('sendchat', $scope.chatText);
     $scope.chatText = '';

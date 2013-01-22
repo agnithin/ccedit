@@ -16,6 +16,7 @@ module.exports = function(io, models){
 				    socket.emit('getUser', user);  
 				  });
 
+		   		  /* get all the user projects */
 				  socket.on('getProjects', function (userId) {
 				    console.log("Get Projects:" + userId);
 				    models.User.findById(user._id, function(err, newUser) {
@@ -29,6 +30,7 @@ module.exports = function(io, models){
 		   			});				    
 				  });
 
+				  /* create a new project */
 				  socket.on('createProject', function (data) {
 				    console.log("create Project:" + data.project.name);
 
@@ -68,6 +70,7 @@ module.exports = function(io, models){
         			});
 				  });
 
+				  /* delete an existing project	 */
 				  socket.on('deleteProject', function (data) {
 				    console.log("Delete Project:" + data.projectId);
 			    	models.Project.findById(data.projectId, function(err, project){
@@ -110,7 +113,8 @@ module.exports = function(io, models){
 			    		}
 			    	});
 				  });
-
+				  
+				  /* search user by name; used for add collaborators */
 				  socket.on('findUserByName', function (searchString) {
 				    console.log("Find User:" + searchString);   
 
@@ -138,6 +142,7 @@ module.exports = function(io, models){
 					});
 				  });
 
+				/* add/remove collaborators in a project  */
 				socket.on('updateCollaborators', function (data) {
 				  	console.log("updating collaborators to project: %j", data);   
 
@@ -231,12 +236,15 @@ module.exports = function(io, models){
 						  	  				}
 						  	  			});
 									}
-									if(updateSuccessfull){
-										socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
-										userSocket.emit('refreshProjects');
-									}else{
-										socket.emit('notify', {type:'danger', text:'Oops! Something went wrong. Could not add project to users.'});
-									}
+									//ugly hack: wait 1 sec so that all db is operations are done
+									setTimeout(function() {
+										if(updateSuccessfull){
+											socket.emit('notify', {type:'info', text:'Collaborators updated successfully.'});
+											userSocket.emit('refreshProjects');
+										}else{
+											socket.emit('notify', {type:'danger', text:'Oops! Something went wrong. Could not add project to users.'});
+										}
+									}, 1000);
 					  	  		}
 					  	  	});
 

@@ -18,7 +18,7 @@ var environment = require('./environment.js'),
 service.init(environment);
 
 var MemoryStore = express.session.MemoryStore,
-	  sessionStore = new MemoryStore();
+    sessionStore = new MemoryStore();
 
 /* include the Mongoose Models */
 var models = {};

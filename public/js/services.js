@@ -96,6 +96,9 @@ app.factory('chatSocket', function ($rootScope) {
         });
       })
     },
+    connect : function(){
+      chatSocket.socket.connect();
+    },
     isConnected : function(){
       return chatSocket.socket.connected === true ||
             chatSocket.socket.connecting === true;
@@ -111,8 +114,13 @@ app.factory('chatSocket', function ($rootScope) {
 ***************************************************/
 app.factory('bootbox', function ($rootScope) {
   return {
-    alert: function (text) {
-      bootbox.alert(text);
+    alert: function (text, callback) {
+      bootbox.alert(text, function(){
+        var args = arguments;
+        $rootScope.$apply(function () {
+          callback.apply(bootbox, args);
+        });
+      });
     },
     confirm: function (text, callback) {
       bootbox.confirm(text, function () {  

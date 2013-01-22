@@ -88,3 +88,16 @@ typeahead: http://tatiyants.com/how-to-use-json-objects-with-twitter-bootstrap-t
 
 
 <pre class="CodeMirror-cursor" style="top: 42px; left: 40px;">&nbsp;</pre>
+
+
+=================================================================
+
+sharing using codemirror
+http://ot.substance.io/demo/#
+http://codesharejs.herokuapp.com/
+https://github.com/tarr11/codeshare
+http://codesharejs.herokuapp.com/
+
+angularjs
+http://m.everymote.com/#/things
+https://github.com/agektmr/ProjectTabManager/blob/master/src/js/background.js

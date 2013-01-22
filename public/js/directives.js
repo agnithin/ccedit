@@ -86,7 +86,7 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
         /* change made to get on cursor acctivity  */
         if(attrs.oncursoractivity){
           codeMirror.on("cursorActivity", function(){
-              scope.$apply(function(self) {
+              scope.$eval(function(self) {
                   //if(!scope.$$phase) {
                     self[attrs.oncursoractivity](codeMirror.getCursor());
                   //}
@@ -117,13 +117,19 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
         // Override the ngModelController $render method, which is what gets called when the model is updated.
         // This takes care of the synchronizing the codeMirror element with the underlying model, in the case that it is changed by something else.
         ngModel.$render = function () {
+          /*start = codeMirror.posFromIndex(pos);
+          codeMirror.replaceRange(text, start);*/
+          var cursorLocation = codeMirror.getCursor();
+          var scrollPos = codeMirror.getScrollInfo();
           codeMirror.setValue(ngModel.$viewValue);
+          codeMirror.setCursor(cursorLocation);
+          codeMirror.scrollTo(scrollPos.left, scrollPos.top);
         };
 
       };
 
       // Communicating with controllers using broadcast events
-      // probably not the best way to do
+      // probably not the best way to go
       $rootScope.$on('updateOthersCursor', function(event, data){
         //remove prev location of cursor
         angular.forEach(othersCursorElements, function(othersCursor){
@@ -132,24 +138,27 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
             if (parent) { parent.removeChild(othersCursor.cursorElement); }
           }
         });
-        var color = 'red';
-        var cursorCoords = codeMirror.cursorCoords(data.cursor);
-        var cursorEl = document.createElement('pre');
-        cursorEl.className = 'blink';
-        cursorEl.style.borderLeftWidth = '2px';
-        cursorEl.style.borderLeftStyle = 'solid';
-        //cursorEl.rel="tooltip";
-        cursorEl.setAttribute('ui-jq', "tooltip");
-        cursorEl.title=data.user.displayName;
-        cursorEl.innerHTML = '&nbsp;';
-        cursorEl.style.borderLeftColor = color;
-        cursorEl.style.height = (cursorCoords.bottom - cursorCoords.top) * 0.85 + 'px';
-        codeMirror.addWidget(data.cursor, cursorEl, false);
+        if(data.cursor){ // if cursor is not set; then it is for clear cursor
+          var color = 'red';
+          var cursorCoords = codeMirror.cursorCoords(data.cursor);
+          var cursorEl = document.createElement('pre');
+          cursorEl.className = 'blink';
+          cursorEl.style.borderLeftWidth = '2px';
+          cursorEl.style.borderLeftStyle = 'solid';
+          //cursorEl.rel="tooltip";
+          cursorEl.setAttribute('ui-jq', "tooltip");
+          cursorEl.title=data.user.displayName;
+          cursorEl.innerHTML = '&nbsp;';
+          cursorEl.style.borderLeftColor = color;
+          cursorEl.style.height = (cursorCoords.bottom - cursorCoords.top) * 0.85 + 'px';
+          codeMirror.addWidget(data.cursor, cursorEl, false);
 
-        othersCursorElements.push({
-          'userId' : data.user.userId,
-          'cursorElement':cursorEl
-        });      
+          othersCursorElements.push({
+            'userId' : data.user.userId,
+            'cursorElement':cursorEl
+          });
+        }
+
       });
 
     $rootScope.$on('clearOthersCursor', function(event){

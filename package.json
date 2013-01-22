@@ -2,7 +2,7 @@
   "author": "agnithin",
   "name": "cc-edit",
   "description": "Colloborative code editor in Node.js",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "start": "node app"
@@ -14,6 +14,9 @@
     "mongoose" : "3.5.x",
     "socket.io" : "0.9.x",
     "passport": "0.1.x",
-    "passport-twitter": "0.1.x"
+    "passport-twitter": "0.1.x",
+    "connect" : "2.7.x",
+    "redis": "*",
+    "connect-redis": "*"    
   }
 }

@@ -17,6 +17,21 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
     }
   }
 
+  $scope.$on('$destroy', function(){    
+    console.log("inside destroy file");
+    console.log($scope.openFiles);
+    angular.forEach($scope.openFiles, function(file){
+      projectSocket.emit('updateCursor', {
+        'user':{
+          'userId' : $rootScope.currentUser._id,
+          'displayName' : $rootScope.currentUser.displayName
+        },
+        'projectId' : $rootScope.project._id,
+        'fileId' : file._id
+      });
+    });
+  });
+
   $scope.closeFile = function(fileId){
     var openFileIndex = getOpenFileIndex(fileId);
      if(openFileIndex != -1){

@@ -61,16 +61,16 @@ module.exports = function(io, models){
 				}
 			  };
 
-			  // when the client emits 'adduser', this listens and executes
+			  /* when the client emits 'adduser', this listens and executes */
 			  socket.on('adduser', logInUser);
 
-			  // when the client emits 'sendchat', this listens and executes
+			  /* when the client emits 'sendchat', this listens and executes */
 			  socket.on('sendchat', sendChat);	  
 
-			  // when user navigates outside the project		
+			  /* when user navigates outside the project	*/	
 			  socket.on('removeuser', logOffUser);
 			  
-			  // when the user disconnects.. perform this
+			  /* when the user disconnects.. perform this */
 			  socket.on('disconnect', logOffUser);
 
 		}else{

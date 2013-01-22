@@ -100,7 +100,12 @@
                 </table>
                 <hr>
                 Selected Users: <span class="pager" ng-repeat="user in selectedUsers">
-                  <a href="" ng-click="removeFromSelectedUsers(user)" ui-jq="tooltip" title="Click to Remove">{{user.displayName}}</a>
+                  <span ui-if="user.userId==currentUser._id">
+                    <a href="" ui-jq="tooltip" title="Cannot remove self">{{user.displayName}}</a>
+                  </span>
+                  <span ui-if="user.userId!=currentUser._id">
+                    <a href="" ng-click="removeFromSelectedUsers(user)" ui-jq="tooltip" title="Click to Remove">{{user.displayName}}</a>
+                  </span>                  
                 </span>              
             </div>
             <div class="modal-footer">

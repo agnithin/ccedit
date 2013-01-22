@@ -2,7 +2,7 @@
 * USER CONTROLLER
 **************************/
 
-app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, userSocket, bootbox, notificationService, Page) {
+app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, $location, userSocket, bootbox, notificationService, Page) {
 
   $scope.page = Page;
 
@@ -17,14 +17,23 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
 
   userSocket.on('refreshProjects', function () {
     userSocket.emit('getProjects', $rootScope.currentUser._id);
+    console.log("refreshing projects");
     //$rootScope.$broadcast('initializeWorkspace');
     //TODO if project open then refresh that project
   });
   
   userSocket.on('getProjects', function (projects) {
     $rootScope.currentUser.projects = projects;
+    if($rootScope.project && getProjectIndex($rootScope.currentUser.projects, $rootScope.project._id ) == -1){
+      console.log("kicked out from project");
+      bootbox.alert("You have been removed as a collaborator from the project!", function(){
+        $location.path("/");
+      });
+      
+    }
   });
 
+  /* delete the selected project */
   $scope.deleteProject = function(project){
     bootbox.confirm("<b>Are you sure you want to delete "+project.projectName+"?</b>" 
       + "<br><br>NOTE: If you are the only collaborator of the project, the project and all its files will be deleted from the server." 
@@ -40,6 +49,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
                 });    
   }
 
+  /* create a new project */
   $scope.createProject = function(newProjectName, newProjectDesc){
     var newProject = {
       'name' : newProjectName,
@@ -61,12 +71,15 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
   $scope.searchedUsers;
   $scope.selectedUsers;
 
+  /* initialize collaborator variables */
   $scope.initializeCollaborators = function(project){
     $scope.selectedUsers = project.users;
     $scope.updatedCollaborators = {add:[], remove:[]};
     $scope.findUserString = '';
     $scope.searchedUsers = new Array();
   }
+
+  /* search for usernames */
   $scope.findUser = function(){
     if($scope.findUserString.length<3){
       bootbox.alert("Enter minmum of 3 characters");
@@ -75,6 +88,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
     }
   }
 
+  /* add user to collaborators list */
   userSocket.on('findUser', function(data){
     $scope.searchedUsers = data.users;
   });
@@ -102,9 +116,10 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
     console.log($scope.updatedCollaborators);
   }
 
+  /* remove user from collaborators list */
   $scope.removeFromSelectedUsers = function(user){
     if(user.userId == $rootScope.currentUser._id){
-       bootbox.alert("You cannot remove your self from the project!");
+       //bootbox.alert("You cannot remove your self from the project!");
     }else{
       /* new logic */
       var userIndexInAdd = getUserIndex($scope.updatedCollaborators.add, user.userId); //userId
@@ -125,6 +140,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
     }
   }
 
+  /* check if the user is in the collaborator list */
   $scope.isUserSelected = function(user){
     return getUserIndex($scope.selectedUsers, user._id) == -1;
   }
@@ -135,6 +151,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
       && $scope.updatedCollaborators.remove.length == 0);
   }
 
+  /* send updated colllaborators list to server */
   $scope.addSelectedUsersToProject = function(project){
     console.log($scope.updatedCollaborators);
     userSocket.emit('updateCollaborators', {
@@ -153,6 +170,18 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, us
       }
     }
     return userIndex;
+  }
+
+  //this function is required because indexOf does not work when there is new search
+  var getProjectIndex = function(projectArrray, projectId){
+    var projectIndex = -1;
+    for(i=0; i<projectArrray.length; i++){
+      if(projectArrray[i].projectId == projectId){
+        projectIndex = i;
+        break;
+      }
+    }
+    return projectIndex;
   }
 
   userSocket.on('notify', function (data) {
