@@ -10,14 +10,16 @@ var express = require('express'),
     mongoose = require('mongoose'),
     diff_match_patch = require('./diff_match_patch_uncompressed'),
     passport = require('passport'),
-    TwitterStrategy = require('passport-twitter').Strategy;
+    TwitterStrategy = require('passport-twitter').Strategy,
+    session = require('express-session'),
+    cookieParser = require('cookie-parser');
 
 var environment = require('./environment.js'),
     service = require('./service.js');
 
 service.init(environment);
 
-var MemoryStore = express.session.MemoryStore,
+var MemoryStore = session.MemoryStore,
     sessionStore = new MemoryStore();
 
 /* include the Mongoose Models */
@@ -43,7 +45,7 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 var io = require('socket.io').listen(server);
 
 io.set('authorization', function(data, accept) {
-  express.cookieParser(environment.session.secret)(data, {}, function(err) {
+  cookieParser(environment.session.secret)(data, {}, function(err) {
     if (err) {
       accept(err, false);
     } else {
