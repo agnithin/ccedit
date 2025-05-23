@@ -3,62 +3,71 @@
 ***************************************************/
 
 /* Module dependencies */
-var express = require('express'),
+const express = require('express'),
     routes = require('./routes'),
     http = require('http'),
     path = require('path'),
     mongoose = require('mongoose'),
     diff_match_patch = require('./diff_match_patch_uncompressed'),
     passport = require('passport'),
-    TwitterStrategy = require('passport-twitter').Strategy,
+    TwitterStrategy = require('@passport-js/passport-twitter').Strategy, // Changed to @passport-js/passport-twitter
     session = require('express-session'),
     cookieParser = require('cookie-parser');
 
-var environment = require('./environment.js'),
+const environment = require('./environment.js'),
     service = require('./service.js');
 
 service.init(environment);
 
-var MemoryStore = session.MemoryStore,
+const MemoryStore = session.MemoryStore,
     sessionStore = new MemoryStore();
 
 /* include the Mongoose Models */
-var models = {};
+const models = {};
 models.User = service.useModel('user');
 models.Project = service.useModel('project');
 models.File = service.useModel('file');
 
 require('./auth')(passport, TwitterStrategy, models, environment);
 
-var app = express();
-require('./configuration')(app, express, path, passport, environment, sessionStore, environment.session.key, environment.session.secret);
+const app = express();
+
+// Define session middleware
+const sessionMiddleware = session({
+    store: sessionStore,
+    key: environment.session.key,
+    secret: environment.session.secret,
+    resave: false,
+    saveUninitialized: true // As per instructions, was false in prior configuration.js
+});
+
+require('./configuration')(app, express, path, passport, environment, sessionMiddleware);
 
 /* include routes */
 require('./routes/index')(app, models)
 require('./routes/auth')(app, passport, models)
 
-var server = http.createServer(app).listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+const server = http.createServer(app).listen(app.get('port'), function(){
+  console.log(`Express server listening on port ${app.get('port')}`); // Changed to template literal
 });
 
 /* include websocket controllers */
-var io = require('socket.io').listen(server);
+const io = require('socket.io')(server); // Corrected initialization
 
-io.set('authorization', function(data, accept) {
-  cookieParser(environment.session.secret)(data, {}, function(err) {
-    if (err) {
-      accept(err, false);
+// 1. Use Express session middleware for Socket.IO
+io.use((socket, next) => {
+    sessionMiddleware(socket.request, socket.request.res || {}, next);
+});
+
+// 2. Custom authorization middleware for Socket.IO
+io.use((socket, next) => {
+    if (socket.request.session && socket.request.session.passport && socket.request.session.passport.user) {
+        socket.session = socket.request.session; // Make session available on the socket object
+        next();
     } else {
-      sessionStore.get(data.signedCookies[environment.session.key], function(err, session) {
-        if (err || !session) {
-          accept('Session error', false);
-        } else {
-          data.session = session;
-          accept(null, true);
-        }
-      });
+        console.error('Socket.IO Authentication error: No user session found.');
+        next(new Error('Authentication error'));
     }
-  });
 });
 
 require('./controllers/user.js')(io, models);

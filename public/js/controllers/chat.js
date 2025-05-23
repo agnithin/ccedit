@@ -20,7 +20,7 @@ app.controller('ChatCtrl', function($scope, $timeout, $rootScope, chatSocket) {
   }
 
   /* initialize chat */
-  var initializeChat = function(){
+  const initializeChat = function(){ // Changed to const
     if(chatSocket.isConnected()){
       chatSocket.emit('adduser', {'projectId':$rootScope.project._id, 'username':$rootScope.currentUser.displayName});
     }else{

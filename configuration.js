@@ -10,7 +10,7 @@ const session = require('express-session'); // express-session module
 const errorhandler = require('errorhandler');
 const cookieParser = require('cookie-parser');
 
-module.exports = function(app, express, path, passport, environment, sessionStore, sessionKey, sessionSecret){
+module.exports = function(app, express, path, passport, environment, sessionMiddleware){
 
   app.set('port', process.env.PORT || environment.port);
   app.set('views', __dirname + '/views');
@@ -21,15 +21,9 @@ module.exports = function(app, express, path, passport, environment, sessionStor
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(methodOverride());
-  app.use(cookieParser(sessionSecret));
+  app.use(cookieParser(environment.session.secret)); // Use environment.session.secret for consistency
 
-  app.use(session({
-    store: sessionStore,
-    key: sessionKey,
-    secret: sessionSecret,
-    resave: false,
-    saveUninitialized: true
-  }));
+  app.use(sessionMiddleware); // Use the passed sessionMiddleware
 
   app.use(passport.initialize());
   app.use(passport.session());
