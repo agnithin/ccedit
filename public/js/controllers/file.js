@@ -5,7 +5,7 @@
 app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, diffMatchPatch, codeMirrorMode) {
   $scope.openFiles = [];
 
-  var emptyFile = {'_id':'', 'name':'','contents':''};
+  const emptyFile = {'_id':'', 'name':'','contents':''}; // Changed to const
   $scope.activeFile = emptyFile; //$scope.openFiles[0]._id; // currently active tab
   $scope.activeFileContentsBeforeChange = '';
 
@@ -33,7 +33,7 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
   });
 
   $scope.closeFile = function(fileId){
-    var openFileIndex = getOpenFileIndex(fileId);
+    const openFileIndex = getOpenFileIndex(fileId); // Changed to const
      if(openFileIndex != -1){
       $scope.openFiles.splice(openFileIndex,1);
         if($scope.openFiles.length>0){ 
@@ -62,6 +62,7 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
   }
 
   projectSocket.on('updateCursor', function (data) {
+    let i; // Declared i here for use after loop
     for(i=0; i<$scope.othersCursors.length;i++){
       if($scope.othersCursors[i].user.userId == data.user.userId){
         $scope.othersCursors[i] = data;
@@ -92,7 +93,7 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
       $scope.updateCursors();
 
       if($scope.activeFile.name.split(".").length>1){
-        var fileMode = codeMirrorMode.getMode($scope.activeFile.name.split(".")[$scope.activeFile.name.split(".").length-1]);
+        const fileMode = codeMirrorMode.getMode($scope.activeFile.name.split(".")[$scope.activeFile.name.split(".").length-1]); // Changed to const
         $rootScope.$broadcast('updateMode', fileMode);
       }else{
         $scope.fileMode = '';
@@ -103,7 +104,7 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
 
   $scope.sendUpdatedFile = function(){
     if($scope.activeFile._id != ''){
-      var diff = diffMatchPatch.diff_launch($scope.activeFileContentsBeforeChange, $scope.activeFile.contents);
+      const diff = diffMatchPatch.diff_launch($scope.activeFileContentsBeforeChange, $scope.activeFile.contents); // Changed to const
       /*console.log("=======Unpatched Text\n" + $scope.activeFileContentsBeforeChange);
       console.log("=======Patch\n" + diff);
       console.log("=======patched text\n" + patch_launch($scope.activeFileContentsBeforeChange, diff));*/
@@ -114,7 +115,7 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
   }
 
   projectSocket.on('getFile', function (newFile) {
-    console.log("recieved file:" + newFile.name);
+    console.log(`recieved file: ${newFile.name}`); // Changed to template literal
     if(newFile == ''){
       alert("file Not Found"); // remove alert and put bootstrap error message
       return;
@@ -124,11 +125,11 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
   });
 
   projectSocket.on('updateFile', function (fileUpdate) {
-    var fileIndex = getOpenFileIndex(fileUpdate.id);
+    const fileIndex = getOpenFileIndex(fileUpdate.id); // Changed to const
     if(fileIndex != -1){
       /*console.log("=======Unpatched Text\n" + $scope.activeFile.contents);
       console.log("Patch =======\n" + fileUpdate.diff);*/
-      var patchedText = diffMatchPatch.patch_launch($scope.activeFile.contents, fileUpdate.patch);
+      const patchedText = diffMatchPatch.patch_launch($scope.activeFile.contents, fileUpdate.patch); // Changed to const
       //console.log("Patched Text =======\n" + patchedText);
       $scope.openFiles[fileIndex].contents = patchedText;
       //$scope.openFiles[fileIndex] = fileUpdate;
@@ -142,11 +143,11 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
     }    
   });
 
-  function getOpenFileIndex(fileId){
-    for (var i =0; i < $scope.openFiles.length; i++){
+  function getOpenFileIndex(fileId){ // This function is part of the controller scope
+    for (let i =0; i < $scope.openFiles.length; i++){ // Changed to let
        if ($scope.openFiles[i]._id == fileId) {
           return i;
-          break;
+          // break; // Unreachable code after return
        }
      }
     return -1;
@@ -159,7 +160,7 @@ app.controller('FileCtrl', function($scope, $rootScope, projectSocket, bootbox, 
 
   $scope.$on('closeFile', function(event, fileId) {
     console.log("closing file");    
-    var fileIndex = getOpenFileIndex(fileId);
+    const fileIndex = getOpenFileIndex(fileId); // Changed to const
     if(fileIndex != -1){ // if file among open files      
       $scope.openFiles.splice(fileIndex, 1);
       if($scope.activeFile._id == fileId){ // if currently editing file, change tab

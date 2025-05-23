@@ -35,23 +35,23 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, $l
 
   /* delete the selected project */
   $scope.deleteProject = function(project){
-    bootbox.confirm("<b>Are you sure you want to delete "+project.projectName+"?</b>" 
-      + "<br><br>NOTE: If you are the only collaborator of the project, the project and all its files will be deleted from the server." 
-      + " If there are other collaborators, the project will remain on the server, but you will be removed from the collaborators list."
+    bootbox.confirm(`<b>Are you sure you want to delete ${project.projectName}?</b>` // Changed to template literal
+      + `<br><br>NOTE: If you are the only collaborator of the project, the project and all its files will be deleted from the server.` 
+      + ` If there are other collaborators, the project will remain on the server, but you will be removed from the collaborators list.`
       , function(confirmed) {
                     if(confirmed){
                       userSocket.emit('deleteProject', {
                         'userId' : $rootScope.currentUser._id,
                         'projectId' : project.projectId
                       });
-                      console.log('deleteProject:'+ $rootScope.currentUser._id + ":"+ project.projectId);
+                      console.log(`deleteProject: ${$rootScope.currentUser._id}:${project.projectId}`); // Changed to template literal
                     }
                 });    
   }
 
   /* create a new project */
   $scope.createProject = function(newProjectName, newProjectDesc){
-    var newProject = {
+    const newProject = { // Changed to const
       'name' : newProjectName,
       'description' : newProjectDesc
     };
@@ -102,7 +102,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, $l
       });
 
       /*new logic */
-      var userIndexInRemove = getUserIndex($scope.updatedCollaborators.remove, user._id)
+      const userIndexInRemove = getUserIndex($scope.updatedCollaborators.remove, user._id); // Changed to const
       if( userIndexInRemove != -1){ 
         $scope.updatedCollaborators.remove.splice(userIndexInRemove,1);
       }else{ // if user already a collaborator
@@ -122,7 +122,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, $l
        //bootbox.alert("You cannot remove your self from the project!");
     }else{
       /* new logic */
-      var userIndexInAdd = getUserIndex($scope.updatedCollaborators.add, user.userId); //userId
+      const userIndexInAdd = getUserIndex($scope.updatedCollaborators.add, user.userId); // Changed to const //userId
       if( userIndexInAdd != -1){ 
         $scope.updatedCollaborators.add.splice(userIndexInAdd, 1);
       }else{// if user already a collaborator
@@ -133,7 +133,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, $l
         });
       }
 
-      var userIndex = getUserIndex($scope.selectedUsers, user.userId);
+      const userIndex = getUserIndex($scope.selectedUsers, user.userId); // Changed to const
       if(userIndex!=-1){
         $scope.selectedUsers.splice(userIndex,1);
       }
@@ -161,9 +161,9 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, $l
   }
 
   //this function is required because indexOf does not work when there is new search
-  var getUserIndex = function(userArrray, userId){
-    var userIndex = -1;
-    for(i=0; i<userArrray.length; i++){
+  const getUserIndex = function(userArrray, userId){ // Changed to const
+    let userIndex = -1; // Changed to let
+    for(let i=0; i<userArrray.length; i++){ // Changed i to let
       if(userArrray[i].userId == userId){
         userIndex = i;
         break;
@@ -173,9 +173,9 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, $l
   }
 
   //this function is required because indexOf does not work when there is new search
-  var getProjectIndex = function(projectArrray, projectId){
-    var projectIndex = -1;
-    for(i=0; i<projectArrray.length; i++){
+  const getProjectIndex = function(projectArrray, projectId){ // Changed to const
+    let projectIndex = -1; // Changed to let
+    for(let i=0; i<projectArrray.length; i++){ // Changed i to let
       if(projectArrray[i].projectId == projectId){
         projectIndex = i;
         break;
@@ -190,7 +190,7 @@ app.controller('UserCtrl', function($scope, $rootScope, $routeParams, $route, $l
 
   /** NOTIFICATION SERVICE **/
   $scope.$on('createNotification',  function (event, notification){
-    console.log("Notification:" + JSON.stringify(notification));
+    console.log(`Notification: ${JSON.stringify(notification)}`); // Changed to template literal
     notificationService.showNotification(notification);
   });
 

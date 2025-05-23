@@ -2,11 +2,11 @@
 * WebSocket service for Project, Chat and User
 ***************************************************/
 app.factory('userSocket', function ($rootScope) {
-  var chatSocket = io.connect().of('/user');
+  const chatSocket = io.connect().of('/user'); // Changed to const
   return {
     on: function (eventName, callback) {
       chatSocket.on(eventName, function () {  
-        var args = arguments;
+        const args = arguments; // Changed to const
         $rootScope.$apply(function () {
           callback.apply(chatSocket, args);
         });
@@ -14,7 +14,7 @@ app.factory('userSocket', function ($rootScope) {
     },
     emit: function (eventName, data, callback) {
       chatSocket.emit(eventName, data, function () {
-        var args = arguments;
+        const args = arguments; // Changed to const
         $rootScope.$apply(function () {
           if (callback) {
             callback.apply(chatSocket, args);
@@ -26,7 +26,7 @@ app.factory('userSocket', function ($rootScope) {
 });
 
 app.factory('projectSocket', function ($rootScope) {
-  var projectSocket = io.connect().of('/project');
+  const projectSocket = io.connect().of('/project'); // Changed to const
   console.log("instantiating projectSocket service");
   projectSocket.socket.on('connect_failed', function (message) { 
     console.log("######## Connection Lost");
@@ -34,7 +34,7 @@ app.factory('projectSocket', function ($rootScope) {
   return {
     on: function (eventName, callback) {
       projectSocket.on(eventName, function () {  
-        var args = arguments;
+        const args = arguments; // Changed to const
         $rootScope.$apply(function () {
           callback.apply(projectSocket, args);
         });
@@ -42,7 +42,7 @@ app.factory('projectSocket', function ($rootScope) {
     },
     emit: function (eventName, data, callback) {
       projectSocket.emit(eventName, data, function () {
-        var args = arguments;
+        const args = arguments; // Changed to const
         $rootScope.$apply(function () {
           if (callback) {
             callback.apply(projectSocket, args);
@@ -65,7 +65,7 @@ app.factory('projectSocket', function ($rootScope) {
       projectSocket.socket.disconnect();
     },
     isConnected : function(){
-      console.log("connectios status:" + projectSocket.socket.connected + "&&" + projectSocket.socket.connecting);
+      console.log(`connectios status: ${projectSocket.socket.connected} && ${projectSocket.socket.connecting}`); // Changed to template literal
       return projectSocket.socket.connected === true ||
             projectSocket.socket.connecting === true;
     },
@@ -76,11 +76,11 @@ app.factory('projectSocket', function ($rootScope) {
 });
 
 app.factory('chatSocket', function ($rootScope) {
-  var chatSocket = io.connect().of('/chat');
+  const chatSocket = io.connect().of('/chat'); // Changed to const
   return {
     on: function (eventName, callback) {
       chatSocket.on(eventName, function () {  
-        var args = arguments;
+        const args = arguments; // Changed to const
         $rootScope.$apply(function () {
           callback.apply(chatSocket, args);
         });
@@ -88,7 +88,7 @@ app.factory('chatSocket', function ($rootScope) {
     },
     emit: function (eventName, data, callback) {
       chatSocket.emit(eventName, data, function () {
-        var args = arguments;
+        const args = arguments; // Changed to const
         $rootScope.$apply(function () {
           if (callback) {
             callback.apply(chatSocket, args);
@@ -116,7 +116,7 @@ app.factory('bootbox', function ($rootScope) {
   return {
     alert: function (text, callback) {
       bootbox.alert(text, function(){
-        var args = arguments;
+        const args = arguments; // Changed to const
         $rootScope.$apply(function () {
           callback.apply(bootbox, args);
         });
@@ -124,7 +124,7 @@ app.factory('bootbox', function ($rootScope) {
     },
     confirm: function (text, callback) {
       bootbox.confirm(text, function () {  
-        var args = arguments;
+        const args = arguments; // Changed to const
         $rootScope.$apply(function () {
           callback.apply(bootbox, args);
         });
@@ -151,16 +151,16 @@ app.factory('notificationService', function ($rootScope) {
 * Google Diff-Match_Patch Service
 ***************************************************/
 app.factory('diffMatchPatch', function ($rootScope) {
-  var dmp = new diff_match_patch();
-  var patch_text = '';
+  const dmp = new diff_match_patch(); // Changed to const
+  const patch_text = ''; // Changed to const (as it's not reassigned in current code)
 
   return {
       diff_launch : function (text1, text2) {
-        var diff = dmp.diff_main(text1, text2, true);
+        const diff = dmp.diff_main(text1, text2, true); // Changed to const
         if (diff.length > 2) {
           dmp.diff_cleanupSemantic(diff);
         }
-        var patch_list = dmp.patch_make(text1, text2, diff);
+        const patch_list = dmp.patch_make(text1, text2, diff); // Changed to const
         //patch_text = dmp.patch_toText(patch_list);
         return patch_list;
       },
@@ -169,11 +169,11 @@ app.factory('diffMatchPatch', function ($rootScope) {
       patch_launch : function (text1, patch_list) {
         //var patches = dmp.patch_fromText(patch_text);
         //var results = dmp.patch_apply(patches, text1);        
-        var results = dmp.patch_apply(patch_list, text1);
+        const results = dmp.patch_apply(patch_list, text1); // Changed to const
         return  results[0];        
         /*results = results[1];
-        var html = '';
-        for (var x = 0; x < results.length; x++) {
+        let html = ''; // Would be let if used
+        for (let x = 0; x < results.length; x++) { // Would be let if used
           if (results[x]) {
             html += 'Ok';
           } else {
@@ -189,7 +189,7 @@ app.factory('diffMatchPatch', function ($rootScope) {
 * jQuery Notification plugin
 ***************************************************/
 app.factory('codeMirrorMode', function ($rootScope) {
-  var modes = {
+  const modes = { // Changed to const
     'html' : 'htmlmixed',
     'htm' : 'htmlmixed',
     'js' : 'javascript',
@@ -221,8 +221,8 @@ app.factory('codeMirrorMode', function ($rootScope) {
 * Simple Page Service to display status of page
 ***************************************************/
 app.factory('Page', function(){
-  var title;
-  var isProjectPage = false;
+  let title; // Changed to let
+  let isProjectPage = false; // Changed to let
   return {
     getTitle: function() { return title; },
     isProjectPage : function(){ return isProjectPage},

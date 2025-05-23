@@ -53,24 +53,24 @@ angular.module('cceditApp.directives', [])
 angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$timeout', '$rootScope', function (uiConfig, $timeout, $rootScope) {
   'use strict';
 
-  var events = ["cursorActivity", "viewportChange", "gutterClick", "focus", "blur", "scroll", "update"];
-  var othersCursorElements = new Array();
+  const events = ["cursorActivity", "viewportChange", "gutterClick", "focus", "blur", "scroll", "update"]; // Changed to const
+  const othersCursorElements = new Array(); // Changed to const (array is mutated, not reassigned)
   return {
     restrict:'A',
     require:'ngModel',
     link:function (scope, elm, attrs, ngModel) {
-      var options, opts, onChange, deferCodeMirror, codeMirror;
+      let options, opts, onChange, deferCodeMirror, codeMirror; // Declared with let, will be const where possible
 
       if (elm[0].type !== 'textarea') {
         throw new Error('uiCodemirror3 can only be applied to a textarea element');
       }
 
-      options = uiConfig.codemirror || {};
-      opts = angular.extend({}, options, scope.$eval(attrs.uiCodemirrorMod));
+      options = uiConfig.codemirror || {}; // options is assigned here
+      opts = angular.extend({}, options, scope.$eval(attrs.uiCodemirrorMod)); // opts is assigned here
       
-      onChange = function (aEvent) {
+      onChange = function (aEvent) { // onChange is assigned here
         return function (instance, changeObj) {
-          var newValue = instance.getValue();
+          const newValue = instance.getValue(); // Changed to const
           if (newValue !== ngModel.$viewValue) {
             ngModel.$setViewValue(newValue);
             scope.$apply();
@@ -80,9 +80,14 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
         };
       };
 
-      deferCodeMirror = function () {        
-        codeMirror = CodeMirror.fromTextArea(elm[0], opts);
-        codeMirror.on("change", onChange(opts.onChange));
+      // Re-declare with const if only assigned once.
+      const const_options = options;
+      const const_opts = opts;
+      const const_onChange = onChange;
+
+      deferCodeMirror = function () { // deferCodeMirror assigned here       
+        codeMirror = CodeMirror.fromTextArea(elm[0], const_opts); // codeMirror assigned here; use const_opts
+        codeMirror.on("change", const_onChange(const_opts.onChange)); // use const_onChange, const_opts
         /* change made to get on cursor acctivity  */
         if(attrs.oncursoractivity){
           codeMirror.on("cursorActivity", function(){
@@ -94,8 +99,9 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
             });
         }
         
-        for (var i = 0, n = events.length, aEvent; i < n; ++i) {
-          aEvent = opts["on" + events[i].charAt(0).toUpperCase() + events[i].slice(1)];
+        const n = events.length; // n can be const
+        for (let i = 0; i < n; ++i) { // i to let
+          let aEvent = const_opts["on" + events[i].charAt(0).toUpperCase() + events[i].slice(1)]; // aEvent to let, use const_opts
           if (aEvent === void 0) continue;
           if (typeof aEvent !== "function") continue;
           codeMirror.on(events[i], aEvent);
@@ -119,8 +125,8 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
         ngModel.$render = function () {
           /*start = codeMirror.posFromIndex(pos);
           codeMirror.replaceRange(text, start);*/
-          var cursorLocation = codeMirror.getCursor();
-          var scrollPos = codeMirror.getScrollInfo();
+          const cursorLocation = codeMirror.getCursor(); // Changed to const
+          const scrollPos = codeMirror.getScrollInfo(); // Changed to const
           codeMirror.setValue(ngModel.$viewValue);
           codeMirror.setCursor(cursorLocation);
           codeMirror.scrollTo(scrollPos.left, scrollPos.top);
@@ -130,18 +136,21 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
 
       // Communicating with controllers using broadcast events
       // probably not the best way to go
+      const const_deferCodeMirror = deferCodeMirror; // const for deferCodeMirror
+      // codeMirror is assigned inside deferCodeMirror, so it can't be const at this scope directly unless deferCodeMirror is immediately invoked.
+
       $rootScope.$on('updateOthersCursor', function(event, data){
         //remove prev location of cursor
         angular.forEach(othersCursorElements, function(othersCursor){
           if(othersCursor.userId == data.user.userId){
-            var parent = othersCursor.cursorElement.parentNode;
+            const parent = othersCursor.cursorElement.parentNode; // Changed to const
             if (parent) { parent.removeChild(othersCursor.cursorElement); }
           }
         });
         if(data.cursor){ // if cursor is not set; then it is for clear cursor
-          var color = 'red';
-          var cursorCoords = codeMirror.cursorCoords(data.cursor);
-          var cursorEl = document.createElement('pre');
+          const color = 'red'; // Changed to const
+          const cursorCoords = codeMirror.cursorCoords(data.cursor); // Changed to const
+          const cursorEl = document.createElement('pre'); // Changed to const
           cursorEl.className = 'blink';
           cursorEl.style.borderLeftWidth = '2px';
           cursorEl.style.borderLeftStyle = 'solid';
@@ -163,7 +172,7 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
 
     $rootScope.$on('clearOthersCursor', function(event){
       angular.forEach(othersCursorElements, function(othersCursor){
-          var parent = othersCursor.cursorElement.parentNode;
+          const parent = othersCursor.cursorElement.parentNode; // Changed to const
           if (parent) { parent.removeChild(othersCursor.cursorElement); }
         });
     });
@@ -174,7 +183,7 @@ angular.module('ui.directives').directive('uiCodemirrorMod', ['ui.config', '$tim
       console.log("mode changed to " + mode);
     });
 
-      $timeout(deferCodeMirror);
+      $timeout(const_deferCodeMirror); // use const_deferCodeMirror
 
     }
   };

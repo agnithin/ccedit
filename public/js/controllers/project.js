@@ -9,7 +9,7 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
   });*/
 
   /* initialize project */
-  var initializeProject = function(){
+  const initializeProject = function(){ // Changed to const
     if(projectSocket.isConnected()){
       projectSocket.emit('getProject', $rootScope.project._id);
     }else{
@@ -54,7 +54,7 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
 
   /* send open file action to file controller */
   $scope.openFile = function(fileId){
-    console.log("openfile:" + fileId);
+    console.log(`openfile: ${fileId}`); // Changed to template literal
     $rootScope.$broadcast('openFile', fileId);
   }
 
@@ -72,7 +72,7 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
 
   /* delete selected file */
   $scope.deleteFile = function(fileId, fileName){    
-    bootbox.confirm("Are you sure you want to delete "+encodeHTML(fileName)+" ?", function(confirmed) {
+    bootbox.confirm(`Are you sure you want to delete ${encodeHTML(fileName)} ?`, function(confirmed) { // Changed to template literal
                     if(confirmed){
                       $rootScope.$broadcast('closeFile', fileId);
                       projectSocket.emit('deleteFile', {'projectId':$rootScope.project._id, 'fileId':fileId});
@@ -85,10 +85,10 @@ app.controller('ProjectCtrl', function($scope, $rootScope, $routeParams, project
   // FILE SEARCH // MOVE THIS TO DIRECTIVES
   $('#file-search').typeahead({
       source: function(query, process) {
-          return_list = [];
-          map = {};
-          data = new Array();
-          for(i=0;i<$scope.project.files.length;i++){
+          let return_list = []; // Changed to let
+          let map = {}; // Changed to let
+          let data = new Array(); // Changed to let
+          for(let i=0; i<$scope.project.files.length; i++){ // Changed i to let
             data.push({
               id: $scope.project.files[i].fileId, 
               label: $scope.project.files[i].fileName});
