@@ -10,7 +10,6 @@ const express = require('express'),
     mongoose = require('mongoose'),
     diff_match_patch = require('./diff_match_patch_uncompressed'),
     passport = require('passport'),
-    TwitterStrategy = require('@passport-js/passport-twitter').Strategy, // Changed to @passport-js/passport-twitter
     session = require('express-session'),
     cookieParser = require('cookie-parser');
 
@@ -28,7 +27,7 @@ models.User = service.useModel('user');
 models.Project = service.useModel('project');
 models.File = service.useModel('file');
 
-require('./auth')(passport, TwitterStrategy, models, environment);
+require('./auth')(passport, models, environment);
 
 const app = express();
 
@@ -38,7 +37,7 @@ const sessionMiddleware = session({
     key: environment.session.key,
     secret: environment.session.secret,
     resave: false,
-    saveUninitialized: true // As per instructions, was false in prior configuration.js
+    saveUninitialized: true
 });
 
 require('./configuration')(app, express, path, passport, environment, sessionMiddleware);
@@ -47,12 +46,14 @@ require('./configuration')(app, express, path, passport, environment, sessionMid
 require('./routes/index')(app, models)
 require('./routes/auth')(app, passport, models)
 
+app.use(express.static(path.join(__dirname, 'public'))); // <--- ADD THIS LINE HERE
+
 const server = http.createServer(app).listen(app.get('port'), function(){
-  console.log(`Express server listening on port ${app.get('port')}`); // Changed to template literal
+  console.log(`Express server listening on port ${app.get('port')}`);
 });
 
 /* include websocket controllers */
-const io = require('socket.io')(server); // Corrected initialization
+const io = require('socket.io')(server);
 
 // 1. Use Express session middleware for Socket.IO
 io.use((socket, next) => {
@@ -62,7 +63,7 @@ io.use((socket, next) => {
 // 2. Custom authorization middleware for Socket.IO
 io.use((socket, next) => {
     if (socket.request.session && socket.request.session.passport && socket.request.session.passport.user) {
-        socket.session = socket.request.session; // Make session available on the socket object
+        socket.session = socket.request.session;
         next();
     } else {
         console.error('Socket.IO Authentication error: No user session found.');

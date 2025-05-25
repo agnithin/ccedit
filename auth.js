@@ -2,7 +2,7 @@
 * Authentication Functions using Passport.js
 ***************************************************/
 
-module.exports = function(passport, TwitterStrategy, models, environment){
+module.exports = function(passport, models, environment){ // Removed TwitterStrategy from parameters
 
   // Passport session setup.
   //   To support persistent login sessions, Passport needs to be able to
@@ -13,7 +13,7 @@ module.exports = function(passport, TwitterStrategy, models, environment){
     done(null, user._id);
   });
 
-  passport.deserializeUser(async function(obj, done) { // Made async
+  passport.deserializeUser(async function(obj, done) {
     try {
       const user = await models.User.findById(obj);
       done(null, user);
@@ -23,58 +23,43 @@ module.exports = function(passport, TwitterStrategy, models, environment){
   });
 
 
-  // Use the TwitterStrategy within Passport.
-  //   Strategies in passport require a `verify` function, which accept
-  //   credentials (in this case, a token, tokenSecret, and Twitter profile), and
-  //   invoke a callback with a user object.
-  console.log('[AUTH.JS] Attempting to register Twitter strategy.');
-  console.log('[AUTH.JS] TwitterStrategy object constructor name:', TwitterStrategy ? TwitterStrategy.name : 'TwitterStrategy is undefined/null');
+  // Use the GoogleStrategy within Passport.
+  const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-  try {
-    const strategyInstance = new TwitterStrategy({
-        consumerKey: environment.twitter.consumerKey,
-        consumerSecret: environment.twitter.consumerSecret,
-        callbackURL: environment.twitter.callbackURL
-      },
-      async function(token, tokenSecret, profile, done) { // Made async
-        try {
-          let user = await models.User.findOne({ provider: 'twitter', providerId: profile.id });
+  passport.use('google', new GoogleStrategy({
+      clientID: environment.google.clientID,
+      clientSecret: environment.google.clientSecret,
+      callbackURL: environment.google.callbackURL
+    },
+    async function(accessToken, refreshToken, profile, done) {
+      try {
+        let user = await models.User.findOne({ provider: 'google', providerId: profile.id });
 
-          if (user) { // returning user
-            console.log("Returning User");
-            await models.User.updateOne({ "_id": user._id }, { $set: { lastConnected: new Date() } });
-            return done(null, user);
-          } else { // firsttime user
-            console.log("First Time User");
-            const newUser = new models.User({ // Changed variable name to avoid conflict if needed, though 'user' is shadowed
-              displayName: profile.displayName,
-              provider: profile.provider,
-              providerId: profile.id,
-              providerUsername: profile.username,
-              lastConnected: Date.now(),
-              profilePicture: `https://api.twitter.com/1/users/profile_image?screen_name=${profile.username}&size=bigger` // Changed to template literal
-            });
-
-            await newUser.save();
-            console.log("New User saved successfully");
-            return done(null, newUser);
-          }
-        } catch (err) {
-          console.log("Error in TwitterStrategy verify callback:", err); // More specific log
-          return done(err, null);
+        if (user) { // Returning user
+          console.log('Google Strategy: Returning User');
+          user.lastConnected = new Date();
+          user.profilePicture = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : user.profilePicture; // Update profile picture
+          await user.save();
+          return done(null, user);
+        } else { // First-time user
+          console.log('Google Strategy: First Time User');
+          const newUser = new models.User({
+            displayName: profile.displayName,
+            email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null, // Store primary email
+            provider: 'google',
+            providerId: profile.id,
+            // providerUsername: profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null, // Optional
+            profilePicture: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
+            lastConnected: new Date()
+          });
+          await newUser.save();
+          console.log('Google Strategy: New User saved successfully');
+          return done(null, newUser);
         }
+      } catch (err) {
+        console.error('Error in GoogleStrategy:', err);
+        return done(err, null);
       }
-    );
-
-    console.log('[AUTH.JS] TwitterStrategy instance created:', strategyInstance ? 'Instance OK' : 'Instance FAILED');
-    if (strategyInstance) { // Add this block
-        console.log('[AUTH.JS] Strategy instance name:', strategyInstance.name); 
     }
-    
-    passport.use('twitter', strategyInstance); // Explicitly name the strategy 'twitter'
-
-    console.log('[AUTH.JS] Twitter strategy registration attempted with passport.use(\'twitter\', strategyInstance).'); // Updated log
-  } catch (e) {
-    console.error('[AUTH.JS] CRITICAL ERROR during TwitterStrategy instantiation or passport.use():', e);
-  }
+  ));
 };

@@ -12,8 +12,8 @@ module.exports.session = {
 	key : "connect.sid"
 }
 
-module.exports.twitter = {
-	consumerKey : "q3FrfHhPosxQ05jCDYOdfA",
-	consumerSecret : "4aiKO3a4sSQeElwzpCMlaHGRgtq7Wjb9Gxyw6N9o9w",
-	callbackURL : "http://local.ccedit.com:2066/auth/twitter/callback"
+module.exports.google = {
+  clientID: 'YOUR_GOOGLE_CLIENT_ID',
+  clientSecret: 'YOUR_GOOGLE_CLIENT_SECRET',
+  callbackURL: 'http://localhost:2066/auth/google/callback'
 };

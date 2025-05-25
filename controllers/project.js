@@ -2,13 +2,13 @@
 * WebSocket Project Controller
 ***************************************************/
 
-const MAX_FILE_BACKUPS_PER_USER = 5; // Added const
+const MAX_FILE_BACKUPS_PER_USER = 5;
 
 module.exports = function(io, models, diff_match_patch){
 	
-	const projectSocket = io // Changed to const
+	const projectSocket = io
 	.of('/project')
-	.on('connection', async function (socket) { // Made async
+	.on('connection', async function (socket) {
 
 		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nproject socket connected");
 		try {
@@ -16,14 +16,12 @@ module.exports = function(io, models, diff_match_patch){
 			if (user) {
 
 		   	  /* Get Project details	*/
-			  socket.on('getProject', async function (projectId) { // Made async
-			    console.log(`Get Project: ${projectId}`); // Changed to template literal
+			  socket.on('getProject', async function (projectId) {
+			    console.log(`Get Project: ${projectId}`);
 			    try {
 			    	if(getArrayIndex(user.projects, 'projectId', projectId) == -1){
 			    		// User does not have permission to access the project
 			    		console.log("|||||||||||||||||||||: unauthorized user");
-			    		// Optionally, send an error message to client
-			    		// return socket.emit('notify', {type:'danger', text:'Unauthorized access to project.'});
 			    	}
 
 			    	socket.join(projectId);
@@ -34,7 +32,7 @@ module.exports = function(io, models, diff_match_patch){
 				  		socket.emit('getProject', projectData);
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! Project not found.'});
-						console.log(`Cannot Find the Project: ${projectId}`); // Changed to template literal
+						console.log(`Cannot Find the Project: ${projectId}`);
 					}
 				} catch (err) {
 					console.error('Error in getProject:', err);
@@ -43,15 +41,15 @@ module.exports = function(io, models, diff_match_patch){
 			  });
 
 			  /* Get details fo a file	*/
-			  socket.on('getFile', async function (fileId) { // Made async
-			    console.log(`Get File: ${fileId}`); // Changed to template literal
+			  socket.on('getFile', async function (fileId) {
+			    console.log(`Get File: ${fileId}`);
 			    try {
 			    	const fileContents = await models.File.findById(fileId);
 				  	if (fileContents) {
 				  		socket.emit('getFile', fileContents);
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! Could not locate the file on server. This could be because someone else deleted this file.'});
-						console.log(`Cannot Find the File: ${fileId}`); // Changed to template literal
+						console.log(`Cannot Find the File: ${fileId}`);
 					}
 				} catch (err) {
 					console.error('Error in getFile:', err);
@@ -60,8 +58,8 @@ module.exports = function(io, models, diff_match_patch){
 			  });
 
 			  /* Update a file */
-			  socket.on('updateFile', async function (data) { // Made async
-			    console.log(`Update File: ${data.id}`); // Changed to template literal
+			  socket.on('updateFile', async function (data) {
+			    console.log(`Update File: ${data.id}`);
 			    socket.broadcast.to(socket.room).emit('updateFile',  data);	    
 			    try {
 			    	const oldfile = await models.File.findById(data.id);
@@ -76,7 +74,7 @@ module.exports = function(io, models, diff_match_patch){
 				  		await oldfile.save();
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! Could not update the file on server. This could be because someone else deleted this file.'});
-						console.log(`Cannot Find the File: ${data.id}`); // Changed to template literal
+						console.log(`Cannot Find the File: ${data.id}`);
 					}
 				} catch (err) {
 					console.error('Error in updateFile:', err);
@@ -85,8 +83,8 @@ module.exports = function(io, models, diff_match_patch){
 			  });
 
 			  /* Create a new File */
-			  socket.on('createFile', async function (data) { // Made async
-			    console.log(`create File: ${data.projectId} : ${data.fileName}`); // Changed to template literal
+			  socket.on('createFile', async function (data) {
+			    console.log(`create File: ${data.projectId} : ${data.fileName}`);
 			    try {
 			    	const newFile = new models.File({
 			    		'name' : data.fileName,
@@ -103,10 +101,10 @@ module.exports = function(io, models, diff_match_patch){
 				  		project.files.push({'fileId':newFile._id, 'fileName':newFile.name});
 				  		await project.save();
 				  		projectSocket.in(socket.room).emit('getProject',  project);
-				  		projectSocket.in(socket.room).emit('notify', {type:'info', text:`${newFile.name} has been added to project`}); // Changed to template literal
+				  		projectSocket.in(socket.room).emit('notify', {type:'info', text:`${newFile.name} has been added to project`});
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! Project not found when creating file.'});
-						console.log(`Cannot Find the Project: ${data.projectId}`); // Changed to template literal
+						console.log(`Cannot Find the Project: ${data.projectId}`);
 					}
 				} catch (err) {
 					console.error('Error in createFile:', err);
@@ -115,37 +113,37 @@ module.exports = function(io, models, diff_match_patch){
 			  });
 
 			  /* Delete Selected file	*/
-			  socket.on('deleteFile', async function (data) { // Made async
-			    console.log(`delete File: ${data.projectId} : ${data.fileId}`); // Changed to template literal
+			  socket.on('deleteFile', async function (data) {
+			    console.log(`delete File: ${data.projectId} : ${data.fileId}`);
 			    try {
 			    	const project = await models.Project.findById(data.projectId);
 				  	if (project) {
 				  		let fileIndex = -1; 
 				  		for (let i = 0; i < project.files.length; i++){
-				  		   if (project.files[i].fileId.equals(data.fileId)) { // Use .equals for ObjectId comparison
+				  		   if (project.files[i].fileId.equals(data.fileId)) {
 				  		      fileIndex = i;
 				  		      break; 
 				  		   }
 				  		 }
-				  		if(fileIndex !== -1){ // Check against -1
+				  		if(fileIndex !== -1){
 				  			project.files.splice(fileIndex, 1);
 				  			await project.save();
 			  				const oldfile = await models.File.findById(data.fileId);
 			  				if (oldfile) {
 			  					const deletedFileName = oldfile.name;
-			  					await oldfile.deleteOne(); // Replaced remove with deleteOne
+			  					await oldfile.deleteOne();
 			  					projectSocket.in(socket.room).emit('getProject',  project);
-			  					projectSocket.in(socket.room).emit('notify', {type:'info', text:`${deletedFileName} has been deleted from project`}); // Changed to template literal
+			  					projectSocket.in(socket.room).emit('notify', {type:'info', text:`${deletedFileName} has been deleted from project`});
 			  				}else{
 			  					socket.emit('notify', {type:'danger', text:'Oops! File to delete not found after removing from project.'});
-			  					console.log(`Cannot Find the File for permanent deletion: ${data.fileId}`); // Changed to template literal
+			  					console.log(`Cannot Find the File for permanent deletion: ${data.fileId}`);
 			  				}
 				  		}else{
 				  			socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not locate the file in project.'});
 				  		} 
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! Project not found when deleting file.'});
-						console.log(`Cannot Find the Project: ${data.projectId}`); // Changed to template literal
+						console.log(`Cannot Find the Project: ${data.projectId}`);
 					}
 				} catch (err) {
 					console.error('Error in deleteFile:', err);
@@ -154,8 +152,8 @@ module.exports = function(io, models, diff_match_patch){
 			  });
 
 			  /* Create a backup of file 	*/
-			  socket.on('backupFile', async function (fileId) { // Made async
-			    console.log(`Backup File: ${fileId}`); // Changed to template literal
+			  socket.on('backupFile', async function (fileId) {
+			    console.log(`Backup File: ${fileId}`);
 			    try {
 			    	const foundFile = await models.File.findById(fileId);
 				  	if (foundFile) {
@@ -175,7 +173,7 @@ module.exports = function(io, models, diff_match_patch){
 				  		socket.emit('notify', {type:'info', text:'File backed-up successfully.'});
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not find file to backup.'});
-						console.log(`Cannot Backup the File, not found: ${fileId}`); // Changed to template literal
+						console.log(`Cannot Backup the File, not found: ${fileId}`);
 					}
 				} catch (err) {
 					console.error('Error in backupFile:', err);
@@ -184,15 +182,15 @@ module.exports = function(io, models, diff_match_patch){
 			  });
 				
 			  /* Get a list of backups	*/
-			  socket.on('listBackups', async function (fileId) { // Made async
-			    console.log(`List Backups for File: ${fileId}`); // Changed to template literal
+			  socket.on('listBackups', async function (fileId) {
+			    console.log(`List Backups for File: ${fileId}`);
 			    try {
 			    	const foundFile = await models.File.findById(fileId);
 				  	if (foundFile) {
 				  		if(!foundFile.backup || foundFile.backup.length === 0){
-				  			socket.emit('listBackups', []); // Send empty array if no backups
+				  			socket.emit('listBackups', []);
 				  		}else{
-				  			const backupList = foundFile.backup.map(bc => ({ // Use map for cleaner transformation
+				  			const backupList = foundFile.backup.map(bc => ({
 				  				fileId: foundFile._id,
 				  				time : new Date(bc.time).toUTCString(),
 				  				backedupBy : bc.backedupBy,
@@ -202,7 +200,7 @@ module.exports = function(io, models, diff_match_patch){
 				  		}
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not locate the file for backups.'});
-						console.log(`Cannot List Backups, file not found: ${fileId}`); // Changed to template literal
+						console.log(`Cannot List Backups, file not found: ${fileId}`);
 					}
 				} catch (err) {
 					console.error('Error in listBackups:', err);
@@ -211,8 +209,8 @@ module.exports = function(io, models, diff_match_patch){
 			  });
 
 			  /* Restore a backup  */
-			  socket.on('restoreBackup', async function (backup) { // Made async
-			    console.log(`Restoring Backup: ${backup._id}`); // Changed to template literal
+			  socket.on('restoreBackup', async function (backup) {
+			    console.log(`Restoring Backup: ${backup._id}`);
 			    try {
 			    	const foundFile = await models.File.findById(backup.fileId);
 				  	if (foundFile) {
@@ -221,16 +219,16 @@ module.exports = function(io, models, diff_match_patch){
 				  		}
 				  		let backupIndex = -1;
 				  		for(let i=0; i<foundFile.backup.length;i++){
-				  			if(foundFile.backup[i]._id.equals(backup._id)){ // Use .equals for ObjectId
+				  			if(foundFile.backup[i]._id.equals(backup._id)){
 				  				backupIndex = i;
 				  				break;
 				  			}
 				  		}
-				  		console.log(`selected backup found at: ${backupIndex}`); // Changed to template literal
+				  		console.log(`selected backup found at: ${backupIndex}`);
 				  		if(backupIndex !== -1){
 				  			const contentsBeforeRestore = foundFile.contents;
 				  			foundFile.contents = foundFile.backup[backupIndex].contents;
-				  			foundFile.modifiedBy = { userId: user._id, displayName: user.displayName }; // Corrected modifiedBy
+				  			foundFile.modifiedBy = { userId: user._id, displayName: user.displayName };
 				  			foundFile.modifiedOn = Date.now();
 				  			await foundFile.save();
 				  			const patch = {
@@ -245,7 +243,7 @@ module.exports = function(io, models, diff_match_patch){
 				  		}
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not locate the file to restore backup.'});
-						console.log(`Could not restore File, file not found: ${backup.fileId}`); // Changed to template literal
+						console.log(`Could not restore File, file not found: ${backup.fileId}`);
 					}
 				} catch (err) {
 					console.error('Error in restoreBackup:', err);
@@ -254,8 +252,8 @@ module.exports = function(io, models, diff_match_patch){
 			  });
 
 			  /* Delete selected Backup	*/
-			  socket.on('deleteBackup', async function (backup) { // Made async
-			    console.log(`Deleting Backup: ${backup._id}`); // Changed to template literal
+			  socket.on('deleteBackup', async function (backup) {
+			    console.log(`Deleting Backup: ${backup._id}`);
 			    try {
 			    	const foundFile = await models.File.findById(backup.fileId);
 				  	if (foundFile) {
@@ -264,12 +262,12 @@ module.exports = function(io, models, diff_match_patch){
 				  		}
 				  		let backupIndex = -1;
 				  		for(let i=0; i<foundFile.backup.length; i++){
-				  			if(foundFile.backup[i]._id.equals(backup._id)){ // Use .equals for ObjectId
+				  			if(foundFile.backup[i]._id.equals(backup._id)){
 				  				backupIndex = i;
 				  				break;
 				  			}
 				  		}
-				  		console.log(`selected backup found at: ${backupIndex}`); // Changed to template literal
+				  		console.log(`selected backup found at: ${backupIndex}`);
 				  		if(backupIndex !== -1){
 				  			foundFile.backup.splice(backupIndex,1);
 				  			await foundFile.save();
@@ -280,7 +278,7 @@ module.exports = function(io, models, diff_match_patch){
 				  		}	  				
 					}else{
 						socket.emit('notify', {type:'danger', text:'Oops! something went wrong. Could not find file to delete backup from.'});
-						console.log(`Could not delete Backup, file not found: ${backup.fileId}`); // Changed to template literal
+						console.log(`Could not delete Backup, file not found: ${backup.fileId}`);
 					}
 				} catch (err) {
 					console.error('Error in deleteBackup:', err);
@@ -289,19 +287,19 @@ module.exports = function(io, models, diff_match_patch){
 			  });			  
 
 			  /* send cursor changes to all clients */
-			  socket.on('updateCursor', function (data) { // This is not an async DB operation
+			  socket.on('updateCursor', function (data) {
 			    console.log("Update Cursor:%j", data);
 			    socket.broadcast.to(socket.room).emit('updateCursor',  data);
 			  });	  
 
-			  socket.on('disconnect', function(){ // This is not an async DB operation
+			  socket.on('disconnect', function(){
 			    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\nclient disconnected");
 			  });
 
 			  /* apply patch to text */
-			  const diff_launch = function(text1, text2) { 
-				const dmp = new diff_match_patch.diff_match_patch(); 
-				const diff = dmp.diff_main(text1, text2, true); 
+			  const diff_launch = function(text1, text2) {
+				const dmp = new diff_match_patch.diff_match_patch();
+				const diff = dmp.diff_main(text1, text2, true);
 				if (diff.length > 2) {
 				  dmp.diff_cleanupSemantic(diff);
 				}
@@ -309,10 +307,10 @@ module.exports = function(io, models, diff_match_patch){
 			  }
 
 			  /* Searches an object Array for a field */
-			  const getArrayIndex = function(objectArray, fieldName, element){ 
-			    let elementIndex = -1; 
-			    for(let i=0; i<objectArray.length; i++){ 
-			      if(objectArray[i][fieldName].equals(element)){ // Use .equals for ObjectId comparison
+			  const getArrayIndex = function(objectArray, fieldName, element){
+			    let elementIndex = -1;
+			    for(let i=0; i<objectArray.length; i++){
+			      if(objectArray[i][fieldName].equals(element)){
 			        elementIndex = i;
 			        break;
 			      }
@@ -322,11 +320,9 @@ module.exports = function(io, models, diff_match_patch){
 
 			} else {
 				console.log("########## User not found in project controller");
-				// socket.disconnect(true);
 			}
 		} catch (err) {
 			console.error("########## Error in project controller user lookup:", err);
-			// socket.disconnect(true);
 		}
 	});
 };
