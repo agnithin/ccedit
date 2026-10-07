@@ -3,10 +3,10 @@
 * Code borrowed from : https://github.com/dtryon/clog
 **************************/
 
-let environment; // Changed from var to let
-const mongoose = require('mongoose'); // Changed from var to const, Use this instance
+let environment;
+const mongoose = require('mongoose');
 
-module.exports.init = function(env) { // Removed mongoose parameter
+module.exports.init = function(env) {
     environment = env;
     // Connect only if not already connected (readyState 1) or connecting (readyState 2)
     // and not disconnecting (readyState 3). Only connect if disconnected (readyState 0).
@@ -18,8 +18,7 @@ module.exports.init = function(env) { // Removed mongoose parameter
 };
 
 module.exports.useModel = function (modelName) {
-    // Connection is now handled in init
-    return require(`./models/${modelName}`)(mongoose); // Changed to template literal
+    return require(`./models/${modelName}`)(mongoose);
 };
 
 /*

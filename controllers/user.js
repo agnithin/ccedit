@@ -20,7 +20,7 @@ module.exports = function(io, models){
 		.on('connection', async function (socket) { // Made async
 
 		try {
-			let user = await models.User.findById(socket.handshake.session.passport.user); // user can be reassigned
+			let user = await models.User.findById(socket.session.passport.user); // user can be reassigned
 			if (!user) {
 				console.log("########## User not found in user controller initial lookup");
 				return; // Or socket.disconnect(true);
